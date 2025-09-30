@@ -19,11 +19,11 @@ export default {
   //Moramo sacekati da itemsMap bude učitan pre nego što pokuša da poveže proizvode. Stavke koje još nisu učitane se privremeno ignorišu, a alert se prikazuje samo kada korisnik pokušava da završi kupovinu:
   computed: {
     resolvedCartItems() {
-      logger.log("📦 cartItems:", this.cartItems);
-      logger.log("🗺️ itemsMap:", this.itemsMap);
+      console.log.log("📦 cartItems:", this.cartItems);
+      console.log.log("🗺️ itemsMap:", this.itemsMap);
       //Šta radi svaka komponenta:!this.itemsMap, Proverava da li itemsMap nije definisan (undefined ili null).Ako je itemsMap npr. null ili undefined, uslov će biti true.Object.keys(this.itemsMap).length === 0, Object.keys(obj) vraća niz svih ključeva objekta.Ako je objekat prazan ({}), niz će imati dužinu 0.Dakle, ovo proverava da li je itemsMap prazan objekat.Ako je bilo koji od uslova true, tada:Ispisuje se upozorenje: '⚠️ itemsMap još nije učitan...'Vraća se prazan niz [] da se ne izvršava dalje u computed ili metodi.
   if (!this.itemsMap || Object.keys(this.itemsMap).length === 0) {
-    logger.log('⚠️ itemsMap još nije učitan, čekamo podatke iz baze.');
+    console.log.log('⚠️ itemsMap još nije učitan, čekamo podatke iz baze.');
     return [];
   }
 
@@ -37,7 +37,7 @@ export default {
     return { ...ci, product };
   }).filter(Boolean);
 
-  logger.log('🛒 resolvedCartItems:', resolved);
+  console.log.log('🛒 resolvedCartItems:', resolved);
   return resolved;
 }},
 mounted() {
@@ -50,38 +50,38 @@ beforeUnmount() {
   methods: {
      async dodajUkorpu(pro_iupac, quantity) {
   //Da proverimo da le je pro_iupac string i da nije undefined 
-  logger.log('>>> Poziv funkcije dodajUkorpu sa:', pro_iupac, quantity);
+  console.log.log('>>> Poziv funkcije dodajUkorpu sa:', pro_iupac, quantity);
 
   // da budemo sigurni da pro iupac je objekat pokazace tip podataka npr pro ipuac natrijum hlorid 
-  logger.log('>>> pro_iupac objekat:', pro_iupac);
-  logger.log('>>> Tip pro_iupac:', typeof pro_iupac);
+  console.log.log('>>> pro_iupac objekat:', pro_iupac);
+  console.log.log('>>> Tip pro_iupac:', typeof pro_iupac);
 
 
-//Imali smo proizvod pronadjen undefined iz tog razloga dodatno logger.log ubacujemo
-logger.log('Poziv sa:', pro_iupac, quantity);
-  logger.log('Lista proizvoda:', this.items);
+//Imali smo proizvod pronadjen undefined iz tog razloga dodatno console.log.log ubacujemo
+console.log.log('Poziv sa:', pro_iupac, quantity);
+  console.log.log('Lista proizvoda:', this.items);
     try {
-    logger.log('>>> Poziv dodajUkorpu sa:', pro_iupac, quantity);
-    logger.log('>>> Trenutna cartItems pre dodavanja:', JSON.stringify(this.cartItems, null, 2));
+    console.log.log('>>> Poziv dodajUkorpu sa:', pro_iupac, quantity);
+    console.log.log('>>> Trenutna cartItems pre dodavanja:', JSON.stringify(this.cartItems, null, 2));
 
     // 1. Pronađi proizvod u items
     const product = this.items.find(item => item.pro_iupac === pro_iupac.pro_iupac);
     if (!product) {
-      logger.error('❌ Proizvod nije pronađen!');
+      console.log.error('❌ Proizvod nije pronađen!');
       return;
     }
-    logger.log('✅ Pronađen proizvod:', product);
+    console.log.log('✅ Pronađen proizvod:', product);
 
     // 2. Napravi kopiju trenutne korpe (iz Vue state)
     let cart = [...this.cartItems];
-    logger.log('📦 Kopija trenutne korpe pre modifikacije:', cart);
+    console.log.log('📦 Kopija trenutne korpe pre modifikacije:', cart);
 
     // 3. Proveri da li proizvod već postoji
     const existingItem = cart.find(item => item.fk_stv_pro_id === product.pro_id);
     if (existingItem) {
       existingItem.stv_kolicina += quantity;
       existingItem.uk_stv_cena = existingItem.stv_kolicina * existingItem.stv_cena;
-      logger.log('🔄 Postojeći proizvod ažuriran:', existingItem);
+      console.log.log('🔄 Postojeći proizvod ažuriran:', existingItem);
     } else {
       const newItem = {
         fk_stv_pro_id: product.pro_id,
@@ -90,43 +90,43 @@ logger.log('Poziv sa:', pro_iupac, quantity);
         uk_stv_cena: quantity * product.pro_cena
       };
       cart.push(newItem);
-      logger.log('➕ Novi proizvod dodat:', newItem);
+      console.log.log('➕ Novi proizvod dodat:', newItem);
     }
 
     // 4. Sačuvaj u localStorage
     localStorage.setItem('cart', JSON.stringify(cart));
-    logger.log('💾 Sačuvano u localStorage:', JSON.stringify(cart, null, 2));
+    console.log.log('💾 Sačuvano u localStorage:', JSON.stringify(cart, null, 2));
 
     // 5. Ažuriraj Vue stanje
     this.cartItems = cart;
     this.cartCount = cart.reduce((sum, item) => sum + item.stv_kolicina, 0);
 
-    logger.log('🎯 Ažurirana cartItems u Vue:', JSON.stringify(this.cartItems, null, 2));
-    logger.log('🔢 Broj proizvoda u korpi:', this.cartCount);
+    console.log.log('🎯 Ažurirana cartItems u Vue:', JSON.stringify(this.cartItems, null, 2));
+    console.log.log('🔢 Broj proizvoda u korpi:', this.cartCount);
 
     // ⚠️ PAZITE: ne pozivati loadCart odmah, jer briše cartItems
     // this.loadCart();
 
   } catch (error) {
-    logger.error('❌ Greška prilikom dodavanja u korpu:', error);
+    console.log.error('❌ Greška prilikom dodavanja u korpu:', error);
   }
 },
 removeFromCart(item) {
     this.cartItems = this.cartItems.filter(ci => ci.fk_stv_pro_id !== item.fk_stv_pro_id);
       this.cartItems = [...this.cartItems]; // FORCIRA REAKTIVNOST
     localStorage.setItem('cart', JSON.stringify(this.cartItems));
-    logger.log('Iz korpe uklonjen:', item);
+    console.log.log('Iz korpe uklonjen:', item);
   },
     clearCart() {
       this.cartItems = [];
       this.cartCount = 0;
       localStorage.setItem('cart', JSON.stringify([]));
-      logger.log('Korpa je očišćena');
+      console.log.log('Korpa je očišćena');
     },
 goToCheckout() {
-    logger.log('>>> Kliknuto: Nastavak kupovine');
-    logger.log('cartItems pre navigacije:', this.cartItems);
-    logger.log('itemsMap pre navigacije:', this.itemsMap);
+    console.log.log('>>> Kliknuto: Nastavak kupovine');
+    console.log.log('cartItems pre navigacije:', this.cartItems);
+    console.log.log('itemsMap pre navigacije:', this.itemsMap);
 
     const isLoggedIn = !!localStorage.getItem('usr_id');
 
@@ -197,7 +197,7 @@ async kreirajNarudzbenicu(nacinPlacanja) {
       }))
     };
 
-    logger.log("📤 Slanje narudžbenice:", narudzbenicaData);
+    console.log.log("📤 Slanje narudžbenice:", narudzbenicaData);
 
     const response = await api.post('/narudzbenice', narudzbenicaData);
     localStorage.setItem('nar_id', response.data.nar_id);
@@ -223,7 +223,7 @@ async kreirajNarudzbenicu(nacinPlacanja) {
 
   } catch (err) {
     Swal.close();
-    logger.error('Greška pri porudžbini:', err);
+    console.log.error('Greška pri porudžbini:', err);
     Swal.fire({
       icon: 'error',
       title: 'Greška',
@@ -236,7 +236,7 @@ async kreirajNarudzbenicu(nacinPlacanja) {
     getNarudzbenicaId() {
   const narudzbenicaId = localStorage.getItem('nar_id');
   if (!narudzbenicaId) {
-    logger.error('ID narudžbenice nije pronađen u localStorage.');
+    console.log.error('ID narudžbenice nije pronađen u localStorage.');
   }
   return narudzbenicaId;
 },
@@ -257,7 +257,7 @@ async kreirajNarudzbenicu(nacinPlacanja) {
   //Aha, ovo objašnjava deo problema. Poruka “unreachable code detected” znači da JavaScript vidi da deo koda posle return nikada neće biti izvršen.//
 
 
-  //Ti koristiš result, ali nisi ga nigde definisala. U trenutnoj verziji map + filter direktno vraća niz, ali ti pokušavaš da logger.log(result) i return result, a result ne postoji.Zato JavaScript prijavljuje grešku (ili unreachable code) jer result je nepoznata promenljiva.//
+  //Ti koristiš result, ali nisi ga nigde definisala. U trenutnoj verziji map + filter direktno vraća niz, ali ti pokušavaš da console.log.log(result) i return result, a result ne postoji.Zato JavaScript prijavljuje grešku (ili unreachable code) jer result je nepoznata promenljiva.//
   
 
     //Ako je cartCount definisan u data, ne treba ga istovremeno definisati i u computed

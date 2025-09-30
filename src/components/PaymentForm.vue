@@ -101,18 +101,18 @@ export default {
   const savedUser = localStorage.getItem('currentUser');
   if (savedUser) {
     this.currentUser = JSON.parse(savedUser);
-    logger.log('Učitani currentUser:', this.currentUser);
+    console.log.log('Učitani currentUser:', this.currentUser);
   } else {
-    logger.log('currentUser nije definisan u localStorage');
+    console.log.log('currentUser nije definisan u localStorage');
   }
 
   // Učitaj trenutnu narudžbinu
   const savedNar = localStorage.getItem('currentNar');
   if (savedNar) {
     this.currentNar = JSON.parse(savedNar);
-    logger.log('Učitani currentNar:', this.currentNar);
+    console.log.log('Učitani currentNar:', this.currentNar);
   } else {
-    logger.log('currentNar nije definisan u localStorage');
+    console.log.log('currentNar nije definisan u localStorage');
   }
 
 },
@@ -172,7 +172,7 @@ async submitPayment() {
       cartItems: this.cartItems
     };
 
-    logger.log("📤 Payment koji ide na backend:", paymentData);
+    console.log.log("📤 Payment koji ide na backend:", paymentData);
 
     const response = await api.post('/api/save-payment', paymentData);
     const clientSecret = response.data.clientSecret;
@@ -217,7 +217,7 @@ async submitPayment() {
 
   } catch (err) {
     this.errorMessage = 'Došlo je do greške prilikom obrade plaćanja.';
-    logger.error('Greška prilikom plaćanja:', err);
+    console.log.error('Greška prilikom plaćanja:', err);
     this.processing = false;
   }
 } }}// <-- kraj submitPayment

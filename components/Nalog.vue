@@ -159,7 +159,7 @@ export default {
 this.$router.push('/login'); // preusmeri na login formu
 
   } catch (err) {
-    logger.error('Greška app:', err);
+    console.log.error('Greška app:', err);
     alert(err.response?.data?.message || 'Greška na serveru');
   }}}}
 //Treba to standardizovati na async/await ili na .then/.catch, a ne mešati obe stvari.

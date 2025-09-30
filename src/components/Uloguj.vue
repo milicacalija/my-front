@@ -67,8 +67,8 @@ export default {
   },
   methods: {
     async tryLogin() {
-  logger.log('Metoda tryLogin je pozvana.');
-  logger.log('Email:', this.email);
+  console.log.log('Metoda tryLogin je pozvana.');
+  console.log.log('Email:', this.email);
 
   try {
     const response = await api.post
@@ -77,13 +77,13 @@ export default {
       password: this.password
     });
 
-    logger.log('Odgovor od servera:', response);
-    logger.log('Podaci u odgovoru:', response.data);
+    console.log.log('Odgovor od servera:', response);
+    console.log.log('Podaci u odgovoru:', response.data);
 
     if (response?.data && response.status === 200) {
       const userData = response.data.data;
       const token = response.data.token; // ovo je token
-      logger.log('Podaci korisnika:', userData);
+      console.log.log('Podaci korisnika:', userData);
 
       if (userData?.usr_id) {
         // 1) Očisti stare vrednosti, da ne bi pamtioo nazive ranijih kljuceva, kljucevi moraju biti uniformni
@@ -103,7 +103,7 @@ localStorage.setItem('token', token);
         localStorage.setItem('userLevel', userData.usr_level ?? 1);
         localStorage.setItem('fk_usr_nar_id', userData.usr_id);
 
-        logger.log('Svi podaci korisnika sačuvani u localStorage.');
+        console.log.log('Svi podaci korisnika sačuvani u localStorage.');
 
         // 3) Ažuriraj reactive data properties da Vue odmah vidi promene
         this.usrName = userData.usr_name || '';
@@ -126,7 +126,7 @@ localStorage.setItem('token', token);
             });
 
           } else {
-            logger.error('Nedostaje usr_id u podacima korisnika.');
+            console.log.error('Nedostaje usr_id u podacima korisnika.');
             Swal.fire({
               icon: 'error',
               title: 'Greška',
@@ -134,7 +134,7 @@ localStorage.setItem('token', token);
             });
           }
         } else {
-          logger.error('Prijava nije uspela ili odgovor servera nije u očekivanom formatu.');
+          console.log.error('Prijava nije uspela ili odgovor servera nije u očekivanom formatu.');
           Swal.fire({
             icon: 'error',
             title: 'Greška pri prijavi',
@@ -142,7 +142,7 @@ localStorage.setItem('token', token);
           });
         }
       } catch (error) {
-        logger.error('Greška prilikom prijave korisnika:', error);
+        console.log.error('Greška prilikom prijave korisnika:', error);
         Swal.fire({
           icon: 'error',
           title: 'Greška pri prijavi',

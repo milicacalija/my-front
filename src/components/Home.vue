@@ -198,7 +198,7 @@ export default {
           this.messages.push({ sender: 'Admin', text: 'Vaš zahtev će biti obrađen u najkraćem roku.' });
         }, 1000);
       })
-      .catch(err => logger.error(err));
+      .catch(err => console.log.error(err));
 
     // Očisti input
     this.newMessage = "";

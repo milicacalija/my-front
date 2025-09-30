@@ -62,7 +62,7 @@ export default {
     api.get
 ('/piktogrami')
       .then(res => this.piktogrami = res.data)
-      .catch(err => logger.error(err));
+      .catch(err => console.log.error(err));
   },
   methods: {
     prikaziProizvode(pktId) {
@@ -70,7 +70,7 @@ export default {
       api.get
 (`/piktogrami/proizvodi?piktogram=${pktId}`)
         .then(res => this.proizvodi = res.data)
-        .catch(err => logger.error(err));
+        .catch(err => console.log.error(err));
     },
     sakrijProizvode() {
       this.selektovaniPiktogram = null;

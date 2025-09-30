@@ -57,7 +57,7 @@ export default {
   },
   methods: {
     dodajUkorpu(proizvod) {
-      logger.log("Dodajem u korpu:", proizvod);
+      console.log.log("Dodajem u korpu:", proizvod);
       // logika za cartItems iz mixina
     }
   }

@@ -67,9 +67,9 @@ export default {
           fk_user_id_sender: 1,  // primer, id trenutnog korisnika
           user_id_reciver: 2      // primer, kome šalješ
         });
-        logger.log(res.data.message);
+        console.log.log(res.data.message);
       } catch (err) {
-        logger.error(err);
+        console.log.error(err);
       }
     },
     async ucitajPoruke() {
@@ -78,7 +78,7 @@ export default {
 ('/poruke');
         this.poruke = res.data;
       } catch (err) {
-        logger.error(err);
+        console.log.error(err);
       }
     }
   }

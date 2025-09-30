@@ -47,14 +47,14 @@ export default {
   name: 'Korpa',
   mixins: [cartMixin],
   mounted() {
-  logger.log('🛒 resolvedCartItems u Korpa.vue:', this.resolvedCartItems);
+  console.log.log('🛒 resolvedCartItems u Korpa.vue:', this.resolvedCartItems);
 },
   //Methods se moze definisati nakon mixins ako ne mislimo da ubacujemo props, computed itd pre methods bloka
    methods: {
     getImageUrl(item) {
-    logger.log('📦 Stavka iz resolvedCartItems:', item);
+    console.log.log('📦 Stavka iz resolvedCartItems:', item);
     const url = getImageUrl(item);
-    logger.log('🖼️ Generisana putanja slike:', url);
+    console.log.log('🖼️ Generisana putanja slike:', url);
     return url;
   },
   handleImageError(event, pro_iupac) {

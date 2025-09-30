@@ -110,8 +110,8 @@ export default {
           };
         }
 
-        // Dodajemo logger.log da vidimo šta ide u mapu
-        logger.log("Povezujemo proizvod sa primenom:", {
+        // Dodajemo console.log.log da vidimo šta ide u mapu
+        console.log.log("Povezujemo proizvod sa primenom:", {
           primena: prim,
           pro_iupac: item.pro_iupac,
           pro_id: item.pro_id
@@ -122,10 +122,10 @@ export default {
     });
 
     this.items = Object.values(primeneMap);
-    logger.log("Konačne stavke (items) za prikaz:", this.items);
+    console.log.log("Konačne stavke (items) za prikaz:", this.items);
 
   } catch (err) {
-    logger.error(err);
+    console.log.error(err);
   }
 },
    getImageUrl(tpr_naziv) {
@@ -134,7 +134,7 @@ export default {
   const key = tpr_naziv; // direktno koristi naziv iz baze, npr "Prehrambena industrija"
 
   if (this.imageMap[key]) {
-    logger.log("Image found for:", tpr_naziv);
+    console.log.log("Image found for:", tpr_naziv);
     return this.imageMap[key];
   } else {
     console.warn("Image not found for:", tpr_naziv);
