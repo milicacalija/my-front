@@ -1,0 +1,43 @@
+/* ========================
+
+
+/* ========================
+   Tabele i tooltip
+======================== */
+.table-container {
+  margin: 20px auto;
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  max-width: 1200px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+th, td {
+  border: 1px solid #762e2e;
+  padding: 8px;
+  text-align: center;
+  word-wrap: break-word;
+  height: 30px;
+}
+
+th {
+  background-color: #641515;
+  color: white;
+  font-weight: bold;
+}
+
+td {
+  background-color: #fff;
+  color: #000;
+  text-align: left;
+}
+
+tbody tr:hover {
+  background-color: #ccc0c0;
+}
+
