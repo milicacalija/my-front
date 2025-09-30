@@ -167,7 +167,7 @@ if (!this.nova_adresa) {
 this.$router.push('/uloguj'); //preusmeri na login formu
 
   } catch (err) {
-    console.log.error('Greška axios:', err);
+    console.error('Greška axios:', err);
     alert(err.response?.data?.message || 'Greška na serveru');
   }}}}
 //Treba to standardizovati na async/await ili na .then/.catch, a ne mešati obe stvari.

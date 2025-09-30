@@ -52,7 +52,7 @@ export default {
           this.spekk = response.data.data; // Postavljamo podatke iz odgovora u users niz
         })
         .catch(error => {
-          console.log.error('Greška prilikom dobijanja podataka:', error);
+          console.error('Greška prilikom dobijanja podataka:', error);
         });
     }
   }

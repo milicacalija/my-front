@@ -12,7 +12,7 @@ export default {
   components: { ProizvodOpis },
   props: ['proizvodId'] ,
   mounted() {
-  console.log.log('Proizvod ID:', this.proizvodId);
+  console.log('Proizvod ID:', this.proizvodId);
 }  // ovo dolazi direktno iz rute
   
 

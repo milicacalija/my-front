@@ -238,7 +238,7 @@ export default {
     this.newProduct = { pro_iupac:'', pro_cena:null, pro_kolicina:null, pro_jedinicamere:'', pro_rok:null, pro_lager:null, tip_hemikalije:'' };
     Swal.fire({ icon: 'success', title: 'Proizvod dodat', showConfirmButton: false, timer: 1500 });
   } catch (err) {
-    console.log.error(err);
+    console.error(err);
     Swal.fire({ icon: 'error', title: 'Greška pri dodavanju proizvoda' });
   }
 },
@@ -249,7 +249,7 @@ async deleteProduct(id) {
     this.products = this.products.filter(p => p.pro_id !== id);
     Swal.fire({ icon: 'success', title: 'Proizvod obrisan', showConfirmButton: false, timer: 1500 });
   } catch (err) {
-    console.log.error(err);
+    console.error(err);
     Swal.fire({ icon: 'error', title: 'Greška pri brisanju proizvoda' });
   }
 },
@@ -262,7 +262,7 @@ async deleteUser(id) {
     this.users = this.users.filter(u => u.usr_id !== id);
     Swal.fire({ icon: 'success', title: 'Korisnik obrisan', showConfirmButton: false, timer: 1500 });
   } catch (err) {
-    console.log.error(err);
+    console.error(err);
     Swal.fire({ icon: 'error', title: 'Greška pri brisanju korisnika' });
   }
 },

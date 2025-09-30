@@ -175,9 +175,9 @@ export default {
 
     // Debug: provera slika za sve stavke
   this.cartItems.forEach(item => {
-      console.log.log('[DEBUG] Stavka u korpi:', item);
+      console.log('[DEBUG] Stavka u korpi:', item);
     const url = this.getImageUrl(item);
-    console.log.log('[DEBUG] Stavka:', item.fk_stv_pro_id, '-> URL:', url);
+    console.log('[DEBUG] Stavka:', item.fk_stv_pro_id, '-> URL:', url);
   });
     // Proveri da li postoji 'msg' u query parametrima, da lepo poruku umesto URL vidimo na frontendu , da je uspesno porucen proizvod
     if (this.$route.query.msg) {

@@ -75,7 +75,7 @@ export default {
       }
     });
   } catch (err) {
-    console.log.error('Greška pri učitavanju bonusa:', err);
+    console.error('Greška pri učitavanju bonusa:', err);
   }
 }
     },
@@ -103,7 +103,7 @@ export default {
       });
     }
   } catch (err) {
-    console.log.error('Greška pri dodavanju bonusa:', err);
+    console.error('Greška pri dodavanju bonusa:', err);
     this.poruka = 'Došlo je do greške pri dodavanju bonusa.';
   }
 },

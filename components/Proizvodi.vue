@@ -190,7 +190,7 @@ watch: {
   // Kada se itemsMap promeni, možeš automatski ažurirati cart ili resolved stavke
   itemsMap: {
     handler(newMap) {
-      console.log.log('🗺️ itemsMap je ažuriran:', newMap);
+      console.log('🗺️ itemsMap je ažuriran:', newMap);
       // npr. možeš update-ovati resolvedCartItems ovde
     },
     deep: true,
@@ -257,12 +257,12 @@ watch: {
   if (!this.searchQuery) return this.proizvodi;
 
   const search = this.searchQuery.trim().toLowerCase();
-  console.log.log('🔍 Search query:', search);
+  console.log('🔍 Search query:', search);
 
   return this.proizvodi.filter(p => {
     const naziv = p.pro_iupac.toLowerCase();
     const isMatch = naziv === search; // precizno podudaranje
-    console.log.log('🧪 Proizvod:', naziv, '| Poklapa se:', isMatch);
+    console.log('🧪 Proizvod:', naziv, '| Poklapa se:', isMatch);
     return isMatch;
   });
 },
@@ -328,8 +328,8 @@ async loadProducts() {
     // 3) Sačuvaj u localStorage (opciono)
     localStorage.setItem('itemsMap', JSON.stringify(this.itemsMap));
 
-    console.log.log("✅ Svi proizvodi:", this.items.map(p => p.pro_id));
-    console.log.log("🗺️ itemsMap ključevi:", Object.keys(this.itemsMap));
+    console.log("✅ Svi proizvodi:", this.items.map(p => p.pro_id));
+    console.log("🗺️ itemsMap ključevi:", Object.keys(this.itemsMap));
 
     // 4) Filtriraj proizvod po ID iz rute (ako postoji)
     const id = this.$route.params.id;
@@ -354,7 +354,7 @@ async loadProducts() {
     }
 
   } catch (error) {
-    console.log.error("❌ Greška pri učitavanju proizvoda:", error);
+    console.error("❌ Greška pri učitavanju proizvoda:", error);
   }
 },
 
@@ -363,7 +363,7 @@ async loadProducts() {
     const proizvod = this.itemsMap[String(id)];
     if (proizvod) {
       this.selectedImageProizvod = proizvod;
-      console.log.log('✅ Učitano proizvod po ID-u:', proizvod);
+      console.log('✅ Učitano proizvod po ID-u:', proizvod);
     } else {
       // fallback: fetch sa API-ja ako ne postoji
       api.get
@@ -372,7 +372,7 @@ async loadProducts() {
           this.selectedImageProizvod = res.data;
         })
         .catch(err => {
-          console.log.error('❌ Greška pri učitavanju proizvoda po ID-u:', err);
+          console.error('❌ Greška pri učitavanju proizvoda po ID-u:', err);
           this.selectedImageProizvod = null;
         });
     }
@@ -385,13 +385,13 @@ async loadProducts() {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
     this.cartItems = cart;
     this.cartCount = cart.reduce((sum, item) => sum + (item.stv_kolicina || 0), 0);
-    console.log.log('Cart items:', this.cartItems);
-    console.log.log('Cart count:', this.cartCount);
+    console.log('Cart items:', this.cartItems);
+    console.log('Cart count:', this.cartCount);
   },
 
   //Za sve što zahteva ceo proizvod (slika, jedinica mere, itd.), treba da napraviš posebnu funkciju:
   getProduct(pro_id) {
-    console.log.log("Tražim pro_id:", pro_id, "u items:", this.items);
+    console.log("Tražim pro_id:", pro_id, "u items:", this.items);
  if (!Array.isArray(this.items)) return null;
   return this.items.find(p => p.pro_id === pro_id) || null;
 },
@@ -423,7 +423,7 @@ async loadProducts() {
       if (this.showCart) {
         this.loadCart();
       }
-      console.log.log("📦 cartItems posle dodavanja:", JSON.stringify(this.cartItems, null, 2));
+      console.log("📦 cartItems posle dodavanja:", JSON.stringify(this.cartItems, null, 2));
     },
     handleRemoveItem(item) {
     // promeni cartItems u roditelju, to će automatski osvežiti pop-up, da kad se aktivira dugme Ukloni automatski uklanja stavku
@@ -469,7 +469,7 @@ async loadProducts() {
   try {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     if (cart.length === 0) {
-      console.log.error('Korpa je prazna');
+      console.error('Korpa je prazna');
       return; // ovde vraćamo funkciju, da se dalje ne izvršava kod
       
     }
@@ -477,17 +477,17 @@ async loadProducts() {
 //Greška Uncaught (in promise) undefined obično znači da se Promise odbija (reject), ali se negde u tvom kodu ne obrađuje pravilno (try/catch, await, ili .catch). Evo šta može biti problem u tvojoj situaciji:, Neslaganje između localStorage ključeva,  Dakle, čuvaš pod nazivom cartItems, a čitaš iz cart, zato cart bude null, pa length baca grešku, ili bude [], pa izbaci 'Korpa je prazna'.
       // Preuzimanje fk_nar_usr_id iz localStorage
       const fk_nar_usr_id = localStorage.getItem('fk_nar_usr_id');
-    console.log.log('fk_nar_usr_id iz localStorage:', fk_nar_usr_id);
+    console.log('fk_nar_usr_id iz localStorage:', fk_nar_usr_id);
 
     if (!fk_nar_usr_id) {
-      console.log.error('Nedostaje fk_nar_usr_id');
+      console.error('Nedostaje fk_nar_usr_id');
       return;
     }
      // Preuzimanje fk_nar_stv_id iz prvog elementa u korpi (ili prilagodite po potrebi)
      const fk_nar_stv_id = cart.length > 0 ? cart[0].stv_id : null;
 
 if (!fk_nar_stv_id) {
-  console.log.error('Nedostaje fk_nar_stv_id u korpi');
+  console.error('Nedostaje fk_nar_stv_id u korpi');
   return;
 }
    // Kreiraj datum i vreme u Beogradskoj zoni
@@ -497,7 +497,7 @@ const nar_datum = moment().tz('Europe/Belgrade').format('YYYY-MM-DD HH:mm:ss');
 
     
     
-  console.log.log('Šaljem narudžbinu sa načinom plaćanja:', nacinPlacanja);
+  console.log('Šaljem narudžbinu sa načinom plaćanja:', nacinPlacanja);
     // Kreiraj narudžbenicu, i tu ide komunikacija sa axios post
     const response = await api.post
 ('/narudzbenice', {
@@ -509,7 +509,7 @@ const nar_datum = moment().tz('Europe/Belgrade').format('YYYY-MM-DD HH:mm:ss');
     });
 
     const nar_id = response.data.nar_id;
-    console.log.log('Narudžbenica kreirana sa ID-jem:', nar_id);
+    console.log('Narudžbenica kreirana sa ID-jem:', nar_id);
 
     // Spremi narudžbenicu u localStorage, da se cuva nar id u localstorage
 const narudzbenica = {
@@ -535,7 +535,7 @@ localStorage.setItem('cart', JSON.stringify([]));
       // Preusmeravanje na stranicu Narudžbenice
       this.$router.push('/narudzbenice');
   } catch (error) {
-    console.log.error('Greška prilikom kreiranja narudžbenice:', error);
+    console.error('Greška prilikom kreiranja narudžbenice:', error);
   }
 },
 //Funkcija za izracunvanje ukupne cene narudzbenice
@@ -549,7 +549,7 @@ calculateTotalPrice() {
 ('/proizvodi');
         this.items = response.data.data;
       } catch (error) {
-        console.log.error('Greška prilikom osvežavanja podataka proizvoda:', error);
+        console.error('Greška prilikom osvežavanja podataka proizvoda:', error);
       }
     },
 
@@ -577,7 +577,7 @@ async fetchCartItems() {
   try {
     const response = await api.get
 ('/narudzbenice');
-    console.log.log('Stavke iz servera:', response.data);
+    console.log('Stavke iz servera:', response.data);
 
     if (response.data && Array.isArray(response.data)) {
       this.cartItems = response.data;
@@ -590,14 +590,14 @@ async fetchCartItems() {
 
       // Sinhronizuj localStorage
       localStorage.setItem('cart', JSON.stringify(this.cartItems));
-      console.log.log('LocalStorage ažuriran:', this.cartItems);
+      console.log('LocalStorage ažuriran:', this.cartItems);
     } else {
       this.cartItems = [];
       this.cartCount = 0;
       localStorage.setItem('cart', JSON.stringify([]));
     }
   } catch (error) {
-    console.log.error('Greška prilikom preuzimanja stavki iz korpe:', error);
+    console.error('Greška prilikom preuzimanja stavki iz korpe:', error);
     this.cartItems = [];
     this.cartCount = 0;
     localStorage.setItem('cart', JSON.stringify([]));
@@ -647,7 +647,7 @@ async searchData() {
       this.noResults = false;
     }
   } catch (error) {
-    console.log.error('Greška prilikom pretrage:', error);
+    console.error('Greška prilikom pretrage:', error);
     this.selectedImageProizvod = null;
     this.noResults = false;
   }
@@ -670,19 +670,19 @@ async searchData() {
 //Ali placanjePouzecem treba ceo proizvod (objekat), a ne samo string pro_iupac, zato ce ti izbaciti gresku undefined kad kliknes plati pouzecem
     selectProizvod(product) {
       //Kod selected proizvod treba da cuvas proizvod kao objekat a ne samo jedno polje, umesti prioizvod u zagradi je bilo pro_iupac, znaci treba umesto toga pisati proizvod
-      console.log.log('Selected proizvod:', product);
+      console.log('Selected proizvod:', product);
       this.selectedImageProizvod = product;
     },
 
     increaseQuantity() {
       this.productQuantity += 1;
-      console.log.log('Increased quantity:', this.productQuantity);
+      console.log('Increased quantity:', this.productQuantity);
     },
 
     decreaseQuantity() {
       if (this.productQuantity > 1) {
         this.productQuantity -= 1;
-        console.log.log('Decreased quantity:', this.productQuantity);
+        console.log('Decreased quantity:', this.productQuantity);
       }
     },
 
@@ -693,9 +693,9 @@ async searchData() {
     } else {
       // Na desktopu, side drawer logika ostaje ista
       // npr. možeš ovde otvoriti korpu sa strane ili ostaviti prazan
-      console.log.log('Desktop side drawer korpa');
+      console.log('Desktop side drawer korpa');
     }
-    console.log.log('Toggled cart popup. Show:', this.showCartPopup);
+    console.log('Toggled cart popup. Show:', this.showCartPopup);
   }
     
   

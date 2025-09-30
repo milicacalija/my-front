@@ -46,7 +46,7 @@ export default {
           this.spekk = response.data.data; // Postavljamo podatke iz odgovora u spekk niz
         })
         .catch(error => {
-          console.log.error('Greška prilikom dobijanja podataka:', error);
+          console.error('Greška prilikom dobijanja podataka:', error);
         });
     }
   }

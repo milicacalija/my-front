@@ -95,7 +95,7 @@ export default {
     const usr_id = localStorage.getItem('usr_id');
   
     if (!usr_id) {
-        console.log.error('Korisnički ID nije pronađen u localStorage.');
+        console.error('Korisnički ID nije pronađen u localStorage.');
         return;
     }
 
@@ -107,23 +107,23 @@ export default {
             const nar_id = response.data.nar_id;
             if (nar_id) {
                 localStorage.setItem('nar_id', nar_id);
-                console.log.log('ID narudžbenice sačuvan u localStorage:', nar_id);
+                console.log('ID narudžbenice sačuvan u localStorage:', nar_id);
             } else {
-                console.log.error('ID narudžbenice nije pronađen u odgovoru.');
+                console.error('ID narudžbenice nije pronađen u odgovoru.');
             }
         } else {
-            console.log.error('Neuspešan zahtev ili neispravan odgovor od servera.');
+            console.error('Neuspešan zahtev ili neispravan odgovor od servera.');
         }
     } catch (error) {
-        console.log.error('Greška prilikom kreiranja narudžbenice:', error);
+        console.error('Greška prilikom kreiranja narudžbenice:', error);
 
         if (error.response) {
-            console.log.error('Status odgovora:', error.response.status);
-            console.log.error('Podaci o grešci:', error.response.data);
+            console.error('Status odgovora:', error.response.status);
+            console.error('Podaci o grešci:', error.response.data);
         } else if (error.request) {
-            console.log.error('Zahtev nije uspeo da dođe do servera.');
+            console.error('Zahtev nije uspeo da dođe do servera.');
         } else {
-            console.log.error('Došlo je do greške prilikom postavljanja zahteva:', error.message);
+            console.error('Došlo je do greške prilikom postavljanja zahteva:', error.message);
         }
     }
 },
@@ -133,7 +133,7 @@ async fetchNarudzbenice() {
     const savedNarudzbenica = localStorage.getItem('narudzbenica');
 
     if (!savedNarudzbenica) {
-        console.log.error('Narudžbenica nije pronađena u localStorage.');
+        console.error('Narudžbenica nije pronađena u localStorage.');
         return;
     }
 
@@ -147,12 +147,12 @@ async fetchNarudzbenice() {
         
         if (response && response.data) {
             this.narudzbenice = [response.data]; // Pretvaranje u niz ako trebate samo jedan objekat
-            console.log.log('Trenutna narudžbenica uspešno preuzeta:', this.narudzbenice);
+            console.log('Trenutna narudžbenica uspešno preuzeta:', this.narudzbenice);
         } else {
-            console.log.error('Neuspešan zahtev ili neispravan odgovor od servera.');
+            console.error('Neuspešan zahtev ili neispravan odgovor od servera.');
         }
     } catch (error) {
-        console.log.error('Došlo je do greške pri preuzimanju trenutne narudžbenice:', error);
+        console.error('Došlo je do greške pri preuzimanju trenutne narudžbenice:', error);
     }
 },
     fetchStavke() {
@@ -161,7 +161,7 @@ async fetchNarudzbenice() {
           this.stavke = response.data.data || [];
         })
         .catch(error => {
-          console.log.error('There was an error fetching stavke!', error);
+          console.error('There was an error fetching stavke!', error);
         });
     },
     calculateTotalPrice() {
@@ -183,11 +183,11 @@ async fetchNarudzbenice() {
 
           // Spremi narudžbenicu u localStorage
           localStorage.setItem('narudzbenica', JSON.stringify(response.data));
-          console.log.log('Narudžbenica ažurirana i spremljena u localStorage:', response.data);
+          console.log('Narudžbenica ažurirana i spremljena u localStorage:', response.data);
 
         })
         .catch(error => {
-          console.log.error('Došlo je do greške!', error);
+          console.error('Došlo je do greške!', error);
         });
     } else {
       api.post
@@ -198,11 +198,11 @@ async fetchNarudzbenice() {
 
           // Spremi narudžbenicu u localStorage
           localStorage.setItem('narudzbenica', JSON.stringify(response.data));
-          console.log.log('Narudžbenica kreirana i spremljena u localStorage:', response.data);
+          console.log('Narudžbenica kreirana i spremljena u localStorage:', response.data);
 
         })
         .catch(error => {
-          console.log.error('Došlo je do greške!', error);
+          console.error('Došlo je do greške!', error);
         });
     }
   },
@@ -235,7 +235,7 @@ async fetchNarudzbenice() {
     setCurrentDateTime() {
       const currentDateTime = moment().tz('Europe/Belgrade').format('YYYY-MM-DD HH:mm:ss');
       this.form.nar_datum = currentDateTime;
-      console.log.log('Trenutno vreme u Beogradu:', currentDateTime);
+      console.log('Trenutno vreme u Beogradu:', currentDateTime);
     },
     formatDateToTimeZone(dateString, timeZone = 'Europe/Belgrade') {
       return moment(dateString).tz(timeZone).format('YYYY-MM-DD HH:mm:ss');

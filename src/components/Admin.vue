@@ -267,7 +267,7 @@ async updateUser(id, updatedData) {
     if (index !== -1) this.users[index] = { ...this.users[index], ...updatedData };
     Swal.fire({ icon: 'success', title: 'Korisnik izmenjen', showConfirmButton: false, timer: 1500 });
   } catch (err) {
-    console.log.error(err);
+    console.error(err);
     Swal.fire({ icon: 'error', title: 'Greška pri izmeni korisnika' });
   }
 },
@@ -298,21 +298,21 @@ async updateUser(id, updatedData) {
 },
  nacPlat(user) {
   if (!user.narudzbenice || !user.narudzbenice.length) {
-    console.log.log('Prva narudžbenica korisnika:', user.narudzbenice[0]);
-    console.log.log('Korisnik nema narudžbenica:', user.usr_name);
+    console.log('Prva narudžbenica korisnika:', user.narudzbenice[0]);
+    console.log('Korisnik nema narudžbenica:', user.usr_name);
     return '-';
   }
 
-  console.log.log('Narudžbenice korisnika:', user.usr_name, user.narudzbenice);
+  console.log('Narudžbenice korisnika:', user.usr_name, user.narudzbenice);
 
   const placanja = user.narudzbenice
     .map((n, index) => {
-      console.log.log(`narudzbenica #${index + 1}`, n.nac_plat);
+      console.log(`narudzbenica #${index + 1}`, n.nac_plat);
       return n.nac_plat;
     })
     .filter(p => p && p.trim() !== '');
 
-  console.log.log('Filtrirani nac_plat:', placanja);
+  console.log('Filtrirani nac_plat:', placanja);
 
   return placanja.length ? placanja.join(', ') : '-';
 },
@@ -324,7 +324,7 @@ async updateUser(id, updatedData) {
     this.newProduct = { pro_iupac:'', pro_cena:null, pro_kolicina:null, pro_jedinicamere:'', pro_rok:null, pro_lager:null, tip_hemikalije:'' };
     Swal.fire({ icon: 'success', title: 'Proizvod dodat', showConfirmButton: false, timer: 1500 });
   } catch (err) {
-    console.log.error(err);
+    console.error(err);
     Swal.fire({ icon: 'error', title: 'Greška pri dodavanju proizvoda' });
   }
 },
@@ -335,7 +335,7 @@ async deleteProduct(id) {
     this.products = this.products.filter(p => p.pro_id !== id);
     Swal.fire({ icon: 'success', title: 'Proizvod obrisan', showConfirmButton: false, timer: 1500 });
   } catch (err) {
-    console.log.error(err);
+    console.error(err);
     Swal.fire({ icon: 'error', title: 'Greška pri brisanju proizvoda' });
   }
 },
@@ -346,7 +346,7 @@ async deleteUser(id) {
     this.users = this.users.filter(u => u.usr_id !== id);
     Swal.fire({ icon: 'success', title: 'Korisnik obrisan', showConfirmButton: false, timer: 1500 });
   } catch (err) {
-    console.log.error(err);
+    console.error(err);
     Swal.fire({ icon: 'error', title: 'Greška pri brisanju korisnika' });
   }
 },
@@ -373,7 +373,7 @@ async deleteOrder(narId) {
       timer: 1500
     });
   } catch (err) {
-    console.log.error('Greška pri brisanju narudžbenice:', err);
+    console.error('Greška pri brisanju narudžbenice:', err);
     Swal.fire({
       icon: 'error',
       title: 'Greška pri brisanju narudžbenice'
@@ -412,9 +412,9 @@ async deleteOrder(narId) {
     });
 
     this.users = Object.values(usersMap);
-    console.log.log('Korisnici sa narudzbenicama:', this.users);
+    console.log('Korisnici sa narudzbenicama:', this.users);
 
-    console.log.log('Korisnici sa narudzbenicama:', this.users);
+    console.log('Korisnici sa narudzbenicama:', this.users);
 
     // -------------------------------
     // 2️⃣ Dohvat proizvoda (poslednja 2)
@@ -422,9 +422,9 @@ async deleteOrder(narId) {
     const productsRes = await api.get('/proizvodi');
     this.products = productsRes.data.data;
 
-    console.log.log('Poslednja 2 proizvoda:', this.products.slice(-2));
+    console.log('Poslednja 2 proizvoda:', this.products.slice(-2));
   } catch (err) {
-    console.log.error(err);
+    console.error(err);
   }
 },
 

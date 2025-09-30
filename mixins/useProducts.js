@@ -21,9 +21,9 @@ export const productMixin = {
           this.itemsMap[item.pro_id] = item;
         });
 
-        console.log.log("ItemsMap kreirana:", this.itemsMap);
+        console.log("ItemsMap kreirana:", this.itemsMap);
       } catch (error) {
-        console.log.error("Greška pri učitavanju proizvoda:", error);
+        console.error("Greška pri učitavanju proizvoda:", error);
       }
     }
   }

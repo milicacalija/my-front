@@ -66,8 +66,8 @@ export default {
   },
   methods: {
     async tryLogin() {
-  console.log.log('Metoda tryLogin je pozvana.');
-  console.log.log('Email:', this.email);
+  console.log('Metoda tryLogin je pozvana.');
+  console.log('Email:', this.email);
 
   try {
     const response = await api.post
@@ -76,12 +76,12 @@ export default {
       password: this.password
     });
 
-    console.log.log('Odgovor od servera:', response);
-    console.log.log('Podaci u odgovoru:', response.data);
+    console.log('Odgovor od servera:', response);
+    console.log('Podaci u odgovoru:', response.data);
 
     if (response?.data && response.status === 200) {
       const userData = response.data.data;
-      console.log.log('Podaci korisnika:', userData);
+      console.log('Podaci korisnika:', userData);
 
       if (userData?.usr_id) {
         // 1) Očisti stare vrednosti, da ne bi pamtioo nazive ranijih kljuceva, kljucevi moraju biti uniformni
@@ -100,7 +100,7 @@ export default {
         localStorage.setItem('userLevel', userData.usr_level ?? 1);
         localStorage.setItem('fk_usr_nar_id', userData.usr_id);
 
-        console.log.log('Svi podaci korisnika sačuvani u localStorage.');
+        console.log('Svi podaci korisnika sačuvani u localStorage.');
 
         // 3) Ažuriraj reactive data properties da Vue odmah vidi promene
         this.usrName = userData.usr_name || '';
@@ -123,7 +123,7 @@ export default {
             });
 
           } else {
-            console.log.error('Nedostaje usr_id u podacima korisnika.');
+            console.error('Nedostaje usr_id u podacima korisnika.');
             Swal.fire({
               icon: 'error',
               title: 'Greška',
@@ -131,7 +131,7 @@ export default {
             });
           }
         } else {
-          console.log.error('Prijava nije uspela ili odgovor servera nije u očekivanom formatu.');
+          console.error('Prijava nije uspela ili odgovor servera nije u očekivanom formatu.');
           Swal.fire({
             icon: 'error',
             title: 'Greška pri prijavi',
@@ -139,7 +139,7 @@ export default {
           });
         }
       } catch (error) {
-        console.log.error('Greška prilikom prijave korisnika:', error);
+        console.error('Greška prilikom prijave korisnika:', error);
         Swal.fire({
           icon: 'error',
           title: 'Greška pri prijavi',

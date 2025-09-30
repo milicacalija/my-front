@@ -54,7 +54,7 @@ export default {
         const res = await api.get("/poruke");
         this.poruke = res.data;
       } catch (err) {
-        console.log.error("Greška pri učitavanju poruka:", err);
+        console.error("Greška pri učitavanju poruka:", err);
       }
     },
     async promeniStatus(poruka) {
@@ -62,9 +62,9 @@ export default {
         await api.put(`/poruke/${poruka.por_id}`, {
           status: poruka.status
         });
-        console.log.log("Status uspešno ažuriran!");
+        console.log("Status uspešno ažuriran!");
       } catch (err) {
-        console.log.error("Greška pri promeni statusa:", err);
+        console.error("Greška pri promeni statusa:", err);
       }
     }
   },
