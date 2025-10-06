@@ -1,39 +1,61 @@
 <template>
   <div class="product-wrapper">
-    <div class="product-card" v-if="proizvod">
-      <!-- Slika proizvoda -->
-      <div class="product-image">
-        <img 
-          :src="`/images/${encodeURIComponent(proizvod.pro_iupac)}.jpg`" 
-          :alt="proizvod.pro_iupac" 
-        />
-      </div>
-
-      <!-- Opis proizvoda -->
-      <div class="product-details">
-        <h2>{{ proizvod.pro_iupac }}</h2>
-        <p><strong>Cena:</strong> {{ proizvod.pro_cena }} RSD</p>
-        <p><strong>Količina:</strong> {{ proizvod.pro_kolicina }}   {{ proizvod.pro_jedinicamere }}</p>
-       <p><strong>Lager: </strong>{{ proizvod.pro_lager}} </p>
-   
-       
-        <!-- Dugme za detalje / porudžbinu -->
-        <router-link :to="{ name: 'proizvodi' }" class="btn-details">
-          Pogledaj detalje / Poruči proizvod →
-        </router-link>
-      </div>
+    <!-- Slika proizvoda -->
+    <div class="selected-proizvod" v-if="proizvod">
+      <img 
+        :src="`/images/${encodeURIComponent(proizvod.pro_iupac)}.jpg`" 
+        :alt="proizvod.pro_iupac" 
+        class="proizvod-slika"
+      />
     </div>
 
-    <div v-else-if="loading">
-      <p>Učitavanje proizvoda...</p>
-    </div>
+    <!-- Tabela sa podacima, colsapn definisi ako imas kolone pa hoces da budu obuhvacene -->
+    <div class="table-container">
+      <div v-if="loading">
+        <p>Učitavanje proizvoda...</p>
+      </div>
 
-    <div v-else>
-      <p>Proizvod nije pronađen.</p>
+      <table v-else-if="proizvod">
+        <thead>
+      <tr>
+        
+      <th> Opis proizvoda</th>  
+        </tr>
+    </thead>
+        <tbody>
+          <tr>
+        <td>
+          <p><strong>Naziv hemikalije:</strong> {{ proizvod.pro_iupac }}</p>
+          <p><strong>Cena:</strong> {{ proizvod.pro_cena }} RSD </p>
+          <p><strong>Količina:</strong> {{ proizvod.pro_kolicina }}</p>
+<p><strong>Lager:</strong> 
+  {{ proizvod.pro_lager > 0 ? proizvod.pro_lager : 'Nema na lageru' }}
+</p>
+
+
+
+      
+        </td>
+      </tr>
+        </tbody>
+      </table>
+
+      <div v-else>
+        <p>Proizvod nije pronađen.</p>
+      </div>
+
+      <!-- Dugme Dodaj u korpu -->
+      <div class="button-container" v-if="proizvod">
+<router-link
+  :to="{ name: 'proizvodi' }"
+  class="more-link"
+>
+  Pogledaj detalje / Poruči proizvod →
+</router-link>
+  </div>
     </div>
   </div>
 </template>
-
 
 <script>
 import { productMixin } from '@/mixins/useProducts';
@@ -41,7 +63,8 @@ import { productMixin } from '@/mixins/useProducts';
 export default {
   name: 'ProizvodOpis',
   mixins: [productMixin],
-  props: { proizvodId: [String, Number] },
+props: { proizvodId: { type: [String, Number], required: true } 
+},
   data() {
     return { loading: true };
   },
@@ -49,6 +72,9 @@ export default {
     proizvod() {
       if (!this.itemsMap || Object.keys(this.itemsMap).length === 0) return null;
       return this.itemsMap[String(this.proizvodId)] || null;
+    },
+    selectedImageProizvod() {
+      return this.proizvod;
     }
   },
   async mounted() {
@@ -57,87 +83,56 @@ export default {
   },
   methods: {
     dodajUkorpu(proizvod) {
-      console.log("Dodajem u korpu:", proizvod);
-      // logika za cartItems iz mixina
+      console.log('Dodajem u korpu:', proizvod);
     }
   }
 };
+
 </script>
-<style scoped>
+<style>
+/*Proizvodi
+======================== */
 .product-wrapper {
-  margin: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.product-card {
   display: flex;
-  gap: 20px;
   align-items: flex-start;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  background-color: #fff;
+  gap: 20px;
+  margin-top: 20px;
 }
 
-.product-image img {
-  width: 200px;
-  height: auto;
-  border-radius: 8px;
-  object-fit: cover;
+.selected-proizvod {
+  flex: 0 0 250px;
+  text-align: center;
 }
 
-.product-details h2 {
-  margin-top: 0;
-  color: #333;
-}
+.proizvod-slika {
+  width: 300px;
+  height: 300px;
+  margin-top: 20px;
 
-.product-details p {
-  margin: 5px 0;
 }
+.table-container {
+  margin: 0;            /* uklanja automatsko centriranje */
+  margin-right: 200px;   /* razmak između tabele i slike (ako treba dodatno prilagoditi) */
+    margin-top: 20px;   /* razmak između tabele i slike (ako treba dodatno prilagoditi) */
 
-.btn-details {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 8px 15px;
-  background-color: #641515;
-  color: white;
-  text-decoration: none;
-  border-radius: 5px;
-  transition: background-color 0.2s;
+  width: auto;          /* zauzima samo koliko joj treba */
+  overflow-x: auto;     /* ostaje scroll ako je potrebno */
 }
-
-.btn-details:hover {
-  background-color: #370808;
-}
-
-/* Responsive */
+/* Media query za male ekrane */
 @media (max-width: 768px) {
-  .product-card {
-    flex-direction: column; /* slika iznad detalja */
-    align-items: center;    /* centriranje */
-    gap: 15px;
+  .product-wrapper {
+    flex-direction: column;  /* stavi proizvod i tabelu jedan ispod drugog */
+    align-items: center;
   }
 
- .product-image {
-    width: 100px;   /* smanjen kontejner */
-    margin: 0 auto;        /* centriranje celog kontejnera */
+  .selected-proizvod {
+    flex: 1 1 100%;
+    max-width: 100%;
   }
 
-  .product-image img {
-    width: 100%;           /* slika se prilagođava kontejneru */
-    height: auto;
-  }
-
-  .product-details {
-    text-align: center; /* lepše na mobilnom */
-  }
-
-  .btn-details {
-    width: 100%;      /* dugme zauzima celu širinu */
-    max-width: 170px;
-    text-align: center;
+  .table-container {
+    margin-right: 0;
   }
 }
-</style>
 
+</style>

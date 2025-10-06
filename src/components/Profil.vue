@@ -5,8 +5,25 @@
 <h1>{{ profileTitle }}</h1>
       <p><strong>Ime i prezime:</strong> {{ usrName }}</p>
 <p><strong>Email:</strong> {{ usrEmail }}</p>
-<p><strong>Lozinka:</strong> {{ usrLozinka }}</p>
-
+<p>
+      <strong>Lozinka:</strong>
+      <input 
+        :type="showPassword ? 'text' : 'password'" 
+        :value="usrLozinka" 
+        readonly
+        class="password-input"
+      />
+      <span class="toggle-eye" @click="togglePassword">
+        <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
+          <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z"/>
+          <path d="M8 5.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/>
+        </svg>
+        <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16">
+          <path d="M13.359 11.238l1.36 1.36a.5.5 0 0 1-.708.707l-1.36-1.36A7.484 7.484 0 0 1 8 13.5C3 13.5 0 8 0 8c.568-.887 1.332-1.741 2.263-2.513l1.36 1.36A2.5 2.5 0 0 0 8 10.5a2.5 2.5 0 0 0 2.36-1.262z"/>
+          <path d="M3.646 3.646a.5.5 0 1 1 .708-.708l9 9a.5.5 0 0 1-.708.708l-9-9z"/>
+        </svg>
+      </span>
+    </p>
 <p><strong>Telefon:</strong> {{ usrPhone }}</p>
 <p><strong>PIB:</strong> {{ usrPib }}</p>
 <p><strong>Kompanija:</strong> {{ firmaNaziv }}</p>
@@ -14,11 +31,11 @@
 
       <button class="logout-btn" @click="logout">Odjavi se</button>
         </div>
-      <!-- Ovde ide elegantni container za proizvode -->
-   <div>
-    <!-- Prikazuje se samo ako korisnik nije admin -->
-    <Proizvodi v-if="!isAdmin" />
-    
+     <!-- Ovde ide elegantni container za proizvode -->
+<div class="profil-products-container">
+  <!-- Prikazuje se samo ako korisnik nije admin -->
+  <Proizvodi v-if="!isAdmin" />
+
    <!-- Dugme za admina da ode na admin stranicu -->
     <div v-if="isAdmin">
   <button class="logout-btn" @click="goToAdmin">
@@ -39,13 +56,12 @@ v-else radi samo ako je prethodni v-if ili v-else-if u istom DOM nivou. -->
 
 <script>
 import Proizvodi from '@/components/Proizvodi.vue';
-import Swal from 'sweetalert2';
 //Ah, sada je potpuno jasno zašto dobijaš “previše rekurzije” (Maximum call stack exceeded) 👀U <template> još uvek koristiš <Admin /> unutar Profil.vue.Admin.vue je tvoja stranica koja verovatno opet importuje Profil.vue.Dakle, Vue pokušava da renderuje Profil → unutra <Admin> → opet Profil → <Admin>… i tako u krug, zato je rekurzija beskonačna.
   
 //Problem je što pokušavaš da importuješ Admin.vue unutar Profil.vue i koristiš <Admin />, ali u stvari:Admin.vue je glavna stranica (verovatno ruta /admin), a ne komponenta.Vue ne dozvoljava da direktno renderuješ rutu kao komponentu unutar druge komponente, osim ako napraviš posebnu podkomponentu (npr. AdminPanel.vue).Dakle, kad stavljaš <Admin /> unutar Profil.vue, Vue ga ne prepoznaje → zato ti izlazi greška Unknown custom element.
 export default {
     //Tvoj computed čita vrednosti direktno iz localStorage, što ne radi kako očekuješ, jer Vue ne zna da se vrednosti localStorage promenile – computed se neće automatski osvežiti. Zato, iako localStorage sadrži sve podatke, template ih ne vidi.Rešenje: koristi data properties + postavi ih pri logovanju
-   components: { Proizvodi},
+   components: { Proizvodi,},
 //Posto kontroliseno prikaz stranice za korisnike i admina moramo na neki nacin to i uraditi kroz prop, isAdmin je boolean (true ako je admin, false ako je običan korisnik).
    
   
@@ -59,6 +75,7 @@ export default {
     firmaNaziv: '',
     usrAdresa: '',
     showAdmin: false,
+    showPassword: false,
         userLevel: 1 // default običan korisnik
         
   }},
@@ -88,6 +105,9 @@ isAdmin() {
 
   //data() property-ji su reaktivni, pa Vue template odmah vidi promene.created() hook se izvršava kada se komponenta učita i popunjava data iz localStorage.localStorage je samo za čuvanje podataka između sesija, Vue ne prati promene automatski – zato moramo kopirati u data.
   methods: {
+    togglePassword() {
+      this.showPassword = !this.showPassword;
+    },
     logout() {
       localStorage.clear();
       this.$router.push('/home');
@@ -156,6 +176,18 @@ isAdmin() {
 .profil-card p {
   margin: 8px 0;
 }
+.toggle-eye {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 10px;
+  cursor: pointer;
+  color: #666; /* svetlo siva, manje kontrastna od crne */
+  transition: color 0.2s;
+}
+
+.toggle-eye:hover {
+  color: #007bff; /* plava kad se hoveruje */
+}
 
 .logout-btn {
   margin-top: 20px;
@@ -176,40 +208,44 @@ isAdmin() {
   background-color: #f9f9f9;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  width: 100%;
+  overflow-x: auto; /* horizontalni scroll ako je preširoko */
+
 }
-@media (max-width: 768px) {
+/* Mobilni prikaz */
+/* Responsive za 336px ekran */
+@media (max-width: 700px) {
   .profil-page {
-    flex-direction: column;
+    flex-direction: column; /* vertikalno */
     align-items: center;
-    margin-top: 20px;
-    padding: 0 10px;
   }
 
   .profil-card {
-    width: 90%; /* umesto fiksnih 400px */
-    padding: 20px;
-  }
-
-  .profil-card h1 {
-    font-size: 1.5rem;
-  }
-
-  .logout-btn {
+    order: 1; /* kartica ostaje na vrhu */
     width: 100%;
-    padding: 12px 0;
-    font-size: 16px;
+    max-width: 280px;
+    padding: 15px;
+    margin-top: 15px;
   }
 
   .profil-products-container {
+    order: 2; /* proizvodi idu ispod */
     width: 100%;
-    padding: 15px;
-    margin-top: 20px;
+    padding: 10px;
+    margin-top: 10px;
   }
 
-  .admin-modal {
-    width: 95%;
-    max-height: 85vh;
-    padding: 15px;
+  .profil-card p {
+    font-size: 13px;
+  }
+
+  .password-input {
+    font-size: 13px;
+  }
+
+  .logout-btn {
+    font-size: 14px;
+    width: 100%;
   }
 }
 

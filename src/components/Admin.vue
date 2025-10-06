@@ -5,7 +5,7 @@
 
     <!-- Pretraga korisnika -->
     <div class="search-container">
-      <input v-model="searchUser" placeholder="Pretraži korisnike po imenu ili emailu" />
+      <input class="input" v-model="searchUser" placeholder ="Pretraži korisnike po imenu ili emailu" />
     </div>
 
     <!-- Statistika korisnika i narudžbenica -->
@@ -206,6 +206,7 @@ export default {
   data() {
     return {
       users: [],
+          loading: true,
       searchUser: '',
       products: [],
       searchProducts: '',
@@ -213,13 +214,17 @@ export default {
     };
   },
   computed: {
-   filteredUsers() {
+   
+    // filtrirani korisnici po imenu/emailu
+    filteredUsers() {
       if (!this.searchUser) return this.users;
-      return this.users.filter(u =>
-        u.usr_name.toLowerCase().includes(this.searchUser.toLowerCase()) ||
-        u.usr_email.toLowerCase().includes(this.searchUser.toLowerCase())
-      );
+      return this.users.filter(u => {
+        const nameMatch = u.usr_name?.toLowerCase().includes(this.searchUser.toLowerCase());
+        const emailMatch = u.usr_email?.toLowerCase().includes(this.searchUser.toLowerCase());
+        return nameMatch || emailMatch;
+      });
     },
+
     totalNarudzbenica() {
       return this.users.reduce((acc, u) => acc + (u.narudzbenice?.length || 0), 0);
     },
@@ -382,60 +387,56 @@ async deleteOrder(narId) {
 },
 
   async fetchData() {
-  try {
-    
-    // ----- // 1️⃣ Dohvat svih korisnika
-    const usersRes = await api.get('/admin/users'); 
-    const allUsers = usersRes.data;
-    // 1️⃣ Dohvat narudžbenica i korisnika
-    // -------------------------------
-    const res = await api.get('/narudzbenice');
-    const data = res.data;
-// Grupisanje po korisniku
-    const usersMap = {};
-    allUsers.forEach(u => {
-      usersMap[u.usr_id] = { ...u, narudzbenice: [] };
-    });
+    try {
+      // 1️⃣ Dohvat svih korisnika
+      const usersRes = await api.get('/admin/users');
+      const allUsers = usersRes.data; // niz korisnika
 
+      // 2️⃣ Dohvat svih narudžbenica
+      const narudzbeniceRes = await api.get('/narudzbenice');
+      const allNarudzbenice = narudzbeniceRes.data; // niz narudžbenica
 
-       data.forEach(nar => {
-      const uId = nar.user.usr_id;
-      if (usersMap[uId]) {
-        usersMap[uId].narudzbenice.push({
-          nar_id: nar.nar_id,
-          nar_datum: nar.nar_datum,
-          nar_cena: nar.nar_cena,
-          nac_plat: nar.nac_plat,
-          stavke: nar.stavke
-        });
-      }
-    });
+      // 3️⃣ Grupisanje narudžbenica po korisniku
+      const usersMap = {};
+      allUsers.forEach(u => {
+        usersMap[u.usr_id] = { ...u, narudzbenice: [] };
+      });
 
-    this.users = Object.values(usersMap);
-    console.log('Korisnici sa narudzbenicama:', this.users);
+      allNarudzbenice.forEach(nar => {
+        const uId = nar.user?.usr_id; // dodaj ? za sigurnost
+        if (usersMap[uId]) {
+          usersMap[uId].narudzbenice.push({
+            nar_id: nar.nar_id,
+            nar_datum: nar.nar_datum,
+            nar_cena: nar.nar_cena,
+            nac_plat: nar.nac_plat,
+            stavke: nar.stavke
+          });
+        }
+      });
 
-    console.log('Korisnici sa narudzbenicama:', this.users);
+      // 4️⃣ Postavljanje u data.users
+      this.users = Object.values(usersMap);
+      console.log('Korisnici sa narudžbenicama:', this.users);
 
-    // -------------------------------
-    // 2️⃣ Dohvat proizvoda (poslednja 2)
-    // -------------------------------
-    const productsRes = await api.get('/proizvodi');
-    this.products = productsRes.data.data;
+      // 5️⃣ Dohvat proizvoda
+      const productsRes = await api.get('/proizvodi');
+      this.products = productsRes.data.data;
+      console.log('Poslednja 2 proizvoda:', this.products.slice(-2));
 
-    console.log('Poslednja 2 proizvoda:', this.products.slice(-2));
-  } catch (err) {
-    console.error(err);
+    } catch (err) {
+      console.error('Greška pri učitavanju podataka:', err);
+    }
+  },
+
+  logout() {
+    localStorage.clear();
+    this.$router.push("/"); // ili "/" ako nemaš login rutu
   }
 },
-
-    logout() {
-      localStorage.clear();
-      this.$router.push("/"); // ili "/" ako nemaš login rutu
-    },
-  },
-  mounted() {
-    this.fetchData();
-  }
+mounted() {
+  this.fetchData();
+},
 };
 </script>
 <style scoped>
@@ -452,6 +453,27 @@ async deleteOrder(narId) {
   display: flex;
   flex-direction: column;
   align-items: center; /* centriranje sadržaja sekcije */
+}
+.input {
+  width: 300px;
+  height: 30px;
+  border-radius: 20px;
+}
+.stats-container {
+  display: flex;           /* rasporedi horizontalno */
+  gap: 20px;               /* razmak između kartica */
+  margin-bottom: 20px;     /* razmak do tabele */
+}
+
+.stat-card {
+  background-color: #f9f9f9;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  text-align: center;
+  flex: 1;                 /* sve kartice iste širine */
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .table-container {

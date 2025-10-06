@@ -1,36 +1,39 @@
 <template>
-
-  
   <div class="checkout-page">
 
     <!-- Leva strana: Korpa / lista proizvoda -->
     <div class="cart-column">
-      <div class="cart-details" v-if="cartItems.length > 0">
+      <div v-if="resolvedCartItems.length > 0" class="cart-details">
         <h3>Stavke u korpi</h3>
-Ukupna cena {{ calculateTotalPrice() }} RSD.        
-<div v-for="item in cartItems" :key="item.fk_stv_pro_id" class="cart-item">
+        <p>Ukupna cena: {{ calculateTotalPrice() }} RSD</p>
+
+        <div 
+          v-for="item in resolvedCartItems" 
+          :key="item.fk_stv_pro_id" 
+          class="cart-item"
+        >
           <!-- Slika proizvoda -->
           <img
-            :src="getImageUrl(itemsMap[item.fk_stv_pro_id])"
-            :alt="itemsMap[item.fk_stv_pro_id]?.pro_iupac || 'Nepoznat proizvod'"
-            @error="handleImageError($event, itemsMap[item.fk_stv_pro_id]?.pro_iupac)"
+            :src="getImageUrl(item.product)"
+            :alt="item.product?.pro_iupac || 'Nepoznat proizvod'"
+            @error="handleImageError($event, item.product?.pro_iupac)"
             class="cart-item-image"
           />
 
           <!-- Info o proizvodu -->
           <div class="cart-item-info">
-            <span class="product-name">{{ itemsMap[item.fk_stv_pro_id]?.pro_iupac || 'Nepoznat proizvod' }}</span>
+            <span class="product-name">{{ item.product?.pro_iupac || 'Nepoznat proizvod' }}</span>
             <span class="quantity">Količina: {{ item.stv_kolicina }} kom</span>
             <span class="price">Cena: {{ item.uk_stv_cena.toFixed(2) }} RSD</span>
           </div>
 
           <!-- Akcije na stavku -->
           <div class="cart-item-actions">
-             <button type="button" class="logout-btn" @click="removeFromCart(item)">
-Ukloni        </button>
+            <button type="button" class="remove-btn" @click="removeFromCart(item)">
+              Ukloni
+            </button>
           </div>
         </div>
-
       </div>
 
       <!-- Prazna korpa -->
@@ -38,60 +41,60 @@ Ukloni        </button>
         <p>Vaša korpa je prazna.</p>
       </div>
     </div>
-<!-- Desna strana: plaćanje i informacije -->
-<div class="payment-sidebar">
-  <div class="shipping-advice">
-  <strong><span class="shipping-text">Rok za isporuku porudžbine 3-5 dana.</span></strong>
-  <p>Prilikom izbora načina plaćanja kliknite na kružić!</p>
-</div>
 
-  <!-- Modal za karticu -->
-  <div v-if="isModalOpen">
-    <div class="payment-modal">
-      <h2>Nastavak kupovine</h2>
-      <payment-form :cart-items="cartItems" :order="order" />
+    <!-- Desna strana: plaćanje i informacije -->
+    <div class="payment-sidebar">
+      <div class="shipping-advice">
+        <strong><span class="shipping-text">Rok za isporuku porudžbine 3-5 dana.</span></strong>
+        <p>Prilikom izbora načina plaćanja kliknite na kružić!</p>
+      </div>
+
+      <!-- Modal za karticu -->
+      <div v-if="isModalOpen" class="payment-modal">
+        <h2>Nastavak kupovine</h2>
+        <payment-form :cart-items="cartItems" :order="order" />
+      </div>
+
+      <!-- Forma plaćanja -->
+      <form id="paymentForm">
+        <label class="payment-label">
+          <strong>Izaberite način plaćanja:</strong>
+        </label>
+
+        <!-- Plaćanje pouzećem -->
+        <div class="payment-option">
+          <input 
+            type="radio" 
+            id="pouzece" 
+            value="pouzece" 
+            v-model="selectedPaymentMethod"
+            @click="kreirajNarudzbenicu('Pouzećem')"
+          />
+          <label for="pouzece">Plaćanje pouzećem</label>
+        </div>
+
+        <!-- Kreditna kartica -->
+        <div class="payment-option">
+          <input
+            type="radio"
+            id="card"
+            value="card"
+            v-model="selectedPaymentMethod"
+            @click="kreirajNarudzbenicu('Kartica')"
+          />
+          <label for="card">Kreditna ili debitna kartica</label>
+        </div>
+      </form>
     </div>
+
   </div>
-
-  <!-- Forma plaćanja -->
-  <form id="myForm">
-    <label class="payment-label">
-      <strong>Izaberite način plaćanja:</strong>
-    </label>
-
-    <!-- Plaćanje pouzećem -->
-    <div class="payment-option">
-      <input 
-        type="radio" 
-        id="pouzece" 
-        value="pouzece" 
-        v-model="selectedPaymentMethod"
-        @click="kreirajNarudzbenicu('Pouzećem')"
-      />
-      <label for="pouzece">Plaćanje pouzećem</label>
-    </div>
-
-    <!-- Kreditna kartica -->
-    <div class="payment-option">
-      <input
-        type="radio"
-        id="card"
-        value="card"
-        v-model="selectedPaymentMethod"
-    @click="kreirajNarudzbenicu('Kartica')"       />
-      <label for="card">Kreditna ili debitna kartica</label>
-    </div>
-  </form>
-</div>
-</div>
-
-  
 </template>
 
 <script>
 import Korpa from '@/components/Korpa.vue';
 import cartMixin from '@/mixins/cartMixin';
 import { getImageUrl } from '@/components/korpaimg.js';
+
 
 
 
@@ -111,29 +114,10 @@ export default {
     
 //Ako cartItems stiže iz roditelja, ne diraj data za cartItems.Ako nema roditelja, izbaci props i definiši cartItems u data sa localStorage.
   },
-  
-  
-  data() {
-    //Greška "Missing required prop: 'order'" znači da komponenta (npr. PaymentForm) očekuje order kao prop, ali joj ne prosleđuješ ništa., fali cartItems, a mora da se prenose proizvodi koji su u korpi do trenutka placanja
 
-    return {
-                // povlačimo iz localStorage da bi lista uvek postojala
-          order: {},//bilo je null ali msilim da ta vrednost ne sme biti za order, nego treba da ga vuce kao objekat
-              cartItems: [],  // obavezno inicijalizovati!
-    stripe: null,
-    elements: null,
-    cardElement: null,
-    processing: false,
-    errorMessage: '',
-    successMessage: '',
-      proizvod: {},  // inicijalno prazan objekat, ne null, prenosi se iz proizvodi.vue
-      selectedPaymentMethod: null,
-      isModalOpen: false,
-      selectedProduct: null, // ili neki početni objekat, npr. {}
-      
-      
-    };
-  },
+  
+  
+  
   //Ako hoćeš da ova stranica NastavakKupovine.vue sama povlači korpu iz localStorage, onda ti nije potreban props.Tvoj script deo bi trebalo da izgleda ovako:/*
  //Ah, sad je jasno — greška “Getter is missing for computed property 'methods'” se javlja zato što si u computed delu definisala nešto što nije funkcija, ili si slučajno stavila methods unutar computed.
   
@@ -169,38 +153,11 @@ export default {
    
 //handlePayment(cardDetails) → koristi se kada plaćaš karticom preko PaymentForm.vue (Stripe ili slično). To ti treba da obradiš uspešno plaćanje i zatvoriš modal.potvrdiPorudzbinu() → koristi se kada korisnik izabere način plaćanja (radio button) i klikne na Potvrdi porudžbinu. To je univerzalno dugme – proverava da li je odabran način plaćanja, i reaguje u skladu sa tim.
 
-    },
+    }}
  
-  mounted() {
-
-    // Debug: provera slika za sve stavke
-  this.cartItems.forEach(item => {
-      console.log('[DEBUG] Stavka u korpi:', item);
-    const url = this.getImageUrl(item);
-    console.log('[DEBUG] Stavka:', item.fk_stv_pro_id, '-> URL:', url);
-  });
-    // Proveri da li postoji 'msg' u query parametrima, da lepo poruku umesto URL vidimo na frontendu , da je uspesno porucen proizvod
-    if (this.$route.query.msg) {
-      alert(decodeURIComponent(this.$route.query.msg));  // Prikazi alert sa porukom
-    }
-},
-  created() {
-    // Učitaj iz localStorage, s obzirod da je cartItem data slobodno mozemo u created manipulasati podacima u Localstorage
-    const savedCart = localStorage.getItem('cart');
-  if (savedCart) {
-    this.cartItems = JSON.parse(savedCart); // Učitaj korpu iz localStorage
-  }
-     // Ako imaš i porudžbinu:
-    //Imaš grešku da order nije objekat. Ti si ga inicijalizovala sa {} i to je ok, ali kad ga učitavaš iz localStorage, možda se upisuje string ili null.Rešenje: pri parsiranju obavezno fallback (vracanje greske):
-    const storedOrder = localStorage.getItem('order');
-    if (storedOrder) {
-      try {
-    this.order = JSON.parse(storedOrder) || {};
-  } catch (e) {
-    this.order = {};
-  }
-}
-  }}
+  
+  
+  
   //Da li prvo ide mounted ili method apsolutno je svejedno Vue ce rendovati kako treba, samo voditi racuna da posle data ide methods ili mounted
 
   

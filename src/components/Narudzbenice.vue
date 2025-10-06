@@ -100,8 +100,7 @@ export default {
     }
 
     try {
-        const response = await api.post
-('/narudzbenice', { fk_nar_usr_id: usr_id });
+        const response = await api.post('/narudzbenice', { fk_nar_usr_id: usr_id });
 
         if (response && response.data && response.status === 200) {
             const nar_id = response.data.nar_id;

@@ -56,29 +56,7 @@ export default {
     };
   },
   methods: {
-    // GET: svi bonusi
-   async ucitajBonuse() {
-  try {
-    const response = await api.get('/bonus');
-    this.bonusi = response.data.data;
-
-    // Provera da li neka narudzbenica ima vrednost > 10000
-    this.bonusi.forEach(bonus => {
-      if (bonus.nar_cena > 10000) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Čestitamo!',
-          text: 'Osvojili ste Bonus 🎉',
-          timer: 3000,
-          showConfirmButton: false
-        });
-      }
-    });
-  } catch (err) {
-    console.error('Greška pri učitavanju bonusa:', err);
-  }
-}
-    },
+   
 
     // POST: dodavanje novog bonusa
    async dodajBonus() {
@@ -110,7 +88,7 @@ export default {
   mounted() {
     this.ucitajBonuse();
   }
-};
+}};
 </script>
 
 <style scoped>

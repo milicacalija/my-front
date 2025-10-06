@@ -20,12 +20,16 @@ import ProizvodOpisView from '@/views/ProizvodOpisView.vue'
 import BonusView from '@/views/BonusView.vue'
 import PorukeView from '@/views/PorukeView.vue'
 import Swal from 'sweetalert2'
+import TabelaProizvodaView from '../views/TabelaProizvodaView.vue'
 
 
 
 
 
 Vue.use(VueRouter)
+
+
+
 
 const routes = [
   {
@@ -93,6 +97,14 @@ const routes = [
   component: ProizvodiView
   /*Sad treba impotrovati KompanijaView, to cemo u index.js, posle svih import*/
 },
+{
+  /*Ovde stvaramo rutu koju zaelimo izmeniti*/
+  path: '/tabelaproizvoda',
+  name: 'tabelaproizvoda',
+  component: TabelaProizvodaView
+  /*Sad treba impotrovati KompanijaView, to cemo u index.js, posle svih import*/
+},
+
 
 
 
@@ -178,6 +190,11 @@ const routes = [
   component: PrimenaView
 },
 {
+  path: '/TabelaProizvoda',
+  name: 'TabelaProizvoda',
+  component: TabelaProizvodaView
+},
+{
   //views → stranice / rute,components → manje, višekratne komponente koje se koriste unutar stranica, te stvari ne smeju se kombinovati
   path: '/proizvod/:id',
       name: 'ProizvodOpis',
@@ -247,6 +264,7 @@ router.beforeEach((to, from, next) => {
     });
     return;
   }
+  
 
   next(); // admin → dozvoli
 });

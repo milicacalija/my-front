@@ -95,6 +95,8 @@
         <button @click="sendMessage">Pošalji</button>
       </div>
     </div>
+    
+
 
   </div>
 </template>
@@ -495,6 +497,24 @@ export default {
 
 .chat-body button:hover {
   background: #390c0c;
+}
+.social-footer {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.social-link img {
+  width: 40px;
+  height: 40px;
+  transition: transform 0.2s, filter 0.2s;
+}
+
+.social-link img:hover {
+  transform: scale(1.2);
+  filter: brightness(1.2);
 }
 
 @media (max-width: 768px) {

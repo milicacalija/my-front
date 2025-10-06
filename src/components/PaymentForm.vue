@@ -95,7 +95,7 @@ export default {
   async mounted() {
     // Učitaj Stripe
     this.stripe = await loadStripe(process.env.VUE_APP_STRIPE_PUBLISHABLE_KEY);
-
+console.log('Stripe key:', process.env.VUE_APP_STRIPE_PUBLISHABLE_KEY);
     
     // Učitaj ulogovanog korisnika
   const savedUser = localStorage.getItem('currentUser');
@@ -151,6 +151,7 @@ export default {
     closeCardModal() {
       this.showCardForm = false;
     },
+
 async submitPayment() {
   if (!this.stripe || !this.card) {
     this.errorMessage = 'Stripe nije inicijalizovan.';
@@ -162,9 +163,47 @@ async submitPayment() {
   this.successMessage = '';
 
   try {
+    // 🔹 Uzimamo userId iz Vue state ili localStorage
+    const userId = this.currentUserId || Number(localStorage.getItem('usr_id'));
+    if (!userId || userId <= 0) {
+      console.error('❌ User ID nije dostupan!');
+      Swal.fire({
+        icon: 'error',
+        title: 'Greška',
+        text: 'Korisnik nije logovan ili ID nije validan.'
+      });
+      this.processing = false;
+      return;
+    }
+
+    // 🔹 Kreiranje narudžbenice ako već nije kreirana
+    if (!this.currentNarId) {
+      const narudzbenicaData = {
+        fk_nar_usr_id: userId,
+        nar_datum: moment().tz('Europe/Belgrade').format('YYYY-MM-DD HH:mm:ss'),
+        nar_cena: this.cartItems.reduce((sum, item) => sum + item.uk_stv_cena, 0),
+        nac_plat: 'Kartica',
+        email: localStorage.getItem('userEmail'),
+        stavke: this.cartItems.map(item => ({
+          fk_stv_pro_id: item.fk_stv_pro_id,
+          stv_kolicina: item.stv_kolicina,
+          stv_cena: item.stv_cena,
+          uk_stv_cena: item.uk_stv_cena
+        }))
+      };
+
+      const narResponse = await api.post('http://localhost:3016/narudzbenice', narudzbenicaData);
+      this.currentNarId = narResponse.data.nar_id;
+      this.currentUserId = narResponse.data.usr_id || userId;
+
+      console.log('💡 Debug submitPayment: currentUserId =', this.currentUserId);
+      console.log('💡 Debug submitPayment: currentNarId =', this.currentNarId);
+    }
+
+    // 🔹 Kreiranje paymentData
     const paymentData = {
-      fk_pa_usr_id: Number(localStorage.getItem('usr_id')),
-      fk_pa_nar_id: Number(localStorage.getItem('nar_id')),
+      fk_pa_usr_id: this.currentUserId || userId,
+      fk_pa_nar_id: this.currentNarId,
       amount: this.cartItems.reduce((sum, item) => sum + item.uk_stv_cena, 0),
       currency: 'rsd',
       email: localStorage.getItem('userEmail'),
@@ -172,15 +211,17 @@ async submitPayment() {
       cartItems: this.cartItems
     };
 
-    console.log("📤 Payment koji ide na backend:", paymentData);
+    console.log('💡 paymentData:', paymentData);
 
-    const response = await api.post('/api/save-payment', paymentData);
+    // 🔹 Stripe PaymentIntent preko backend-a
+    const response = await api.post('http://localhost:3016/save-payment', paymentData);
+    console.log('💾 Payment response:', response.data);
+
     const clientSecret = response.data.clientSecret;
 
+    // 🔹 Potvrđivanje plaćanja na Stripe-u
     const result = await this.stripe.confirmCardPayment(clientSecret, {
-      payment_method: {
-        card: this.card
-      }
+      payment_method: { card: this.card }
     });
 
     if (result.error) {
@@ -190,17 +231,48 @@ async submitPayment() {
     }
 
     const paymentIntent = result.paymentIntent;
+    // nakon uspešnog result.paymentIntent
+console.log('📦 Full paymentIntent (from client):', paymentIntent);
+
+
+// payment_method direktno na paymentIntent (može biti id, npr. pm_...)
+console.log('🆔 paymentIntent.payment_method:', paymentIntent.payment_method);
+
+
+
+// pokušaj učitavanja brand-a klasično
+const brandClient = paymentIntent.charges?.data?.[0]?.payment_method_details?.card?.brand;
+console.log('💳 brand (client extract):', brandClient);
+
+// fallback: ako nema charges (npr. konfig. automatic_payment_methods), pozovi backend da retrieve-uje PaymentIntent i vrati brand
+if (!brandClient) {
+  try {
+    console.log('🔎 Brand nije u paymentIntent na klijentu — pokušavam da dohvatim sa backend-a...');
+    const pmResp = await api.get(`/payment-method/${paymentIntent.id}`);
+    console.log('🔁 Backend /payment-method response:', pmResp.data);
+    const brandBackend = pmResp.data.cardBrand;
+    console.log('💳 brand (backend):', brandBackend);
+  } catch (e) {
+    console.error('❌ Neuspeo poziv /payment-method:', e);
+  }
+}
+
 
     if (paymentIntent && paymentIntent.status === 'succeeded') {
-      this.successMessage = 'Plaćanje je uspešno završeno!';
       this.processing = false;
       this.showCardForm = false;
 
-      await api.post('/api/save-payment', {
+      // 🔹 Tip kartice
+      const pmResp = await api.get(`/payment-method/${paymentIntent.id}`);
+const brand = pmResp.data.cardBrand || 'card';
+console.log('💳 brand:', brand);
+
+      // 🔹 Sačuvamo Stripe podatke u backend
+      await api.post('http://localhost:3016/save-payment', {
         ...paymentData,
         status: paymentIntent.status,
         stripe_payment_intent_id: paymentIntent.id,
-        payment_method: paymentIntent.payment_method_types[0]
+        payment_method: brand
       });
 
       Swal.fire({
@@ -208,9 +280,7 @@ async submitPayment() {
         title: 'Plaćanje uspešno završeno!',
         text: 'Vaša porudžbina je obrađena i biće isporučena u roku od 3-5 dana.',
         showConfirmButton: true
-      }).then(() => {
-        this.$router.push('/');
-      });
+      }).then(() => this.$router.push('/'));
 
       this.$emit('payment-success', result);
     }
@@ -220,7 +290,13 @@ async submitPayment() {
     console.error('Greška prilikom plaćanja:', err);
     this.processing = false;
   }
-} }}// <-- kraj submitPayment
+}}}
+
+
+
+
+//Bila sam pozivala funkciju za devfinisanje cardNumber iako jos nije definisan cardNumber dakle to ne moze tako i zato je bila greska cardNumer nije definisan
+
 // <-- OVDJE se završava submitPayment
 
 //Kada postaviš showCardForm = false, celo <div class="modal-overlay"> nestaje, a sa njim i div za successMessage.Zato nikada ne vidiš poruku.

@@ -18,17 +18,17 @@
         ></iframe>
 
         <div class="contact-info">
-          
-          <p>
-            <a href="mailto:chemical@distribution.com">📧 chemicals@chemistry.com</a>
-          </p>
-          <p>
-            <a href="tel:+381659600516">📞 +381 65 9600 516</a>
-          </p>
-        </div>
-      </div>
-    </div>
+  <div class="contact-card">
+    <span class="icon">📧</span>
+    <a href="mailto:chemical@distribution.com">chemicals@chemistry.com</a>
   </div>
+  <div class="contact-card">
+    <span class="icon">📞</span>
+    <a href="tel:+381659600516">+381 65 9600 516</a>
+  </div>
+</div>
+  </div>
+  </div></div>
 </template>
 
 <script>
@@ -104,6 +104,27 @@ export default {
   border-radius: 10px;
   margin: 0 auto;       /* centrira mapu unutar container */
 }
+.contact-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  margin-bottom: 15px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.contact-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.contact-card .icon {
+  font-size: 1.5em;
+}
+
 
 /* Mobile view */
 /* Mobile view */

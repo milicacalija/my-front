@@ -8,16 +8,20 @@
 je nevažeći Vue sintaksno — nedostaje ime atributa (npr. v-bind:cart-items, :cart-items, ili slično).-->
 <router-view :cart-items="cartItems" @update-cart-items="updateCartItems"></router-view>  </div>
 </template>
-
+ <button style="position: fixed; top: 20px; right: 20px; z-index: 9999; background:red; color:white;">
+    Test Dugme
+  </button>
 <script>
 
 import PaymentForm from './components/PaymentForm.vue'
+import Proizvodi from './components/Proizvodi.vue';
 export default {
   name: 'App',
 
   //Da li PaymentForm.vue uopšte koristiš u App.vue?Ako ne koristiš ga u router/index.js, onda ova komponenta nije nikada aktivnaIli ti nedostaje nešto poput:
   components: {
     PaymentForm,
+    Proizvodi
       },
   data() {
     return {

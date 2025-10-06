@@ -23,19 +23,7 @@
 </div>
 
       </form>
-      <!--v-show, when assigned with false, applies display: none inline style and hides the element visually and makes almost no modifications to the DOM!!
-      Unfortunately, you cannot use v-show directive because it applies only display: none style.
-    But a viable solution is to use :class binding, which is pretty flexible in Vue. When the object literal { className: boolValue } is assigned to the :class, Vue applies the "className" as a class to the element if boolValue is true.-->
-
-    
-
-
-    
-
-    
-
-<!--Dugo nisam uspela prikazati rezultat na display, razlog je tome sto nisam u v-show direktivi oznacila  rezultat ako je razlicit od null bude true,rezultat !== null, posto sam ovo oznacila imam poruku na display -->
-
+      
 <p v-if="rezultat !== null && rezultat !== 'Niste se ulogovali' && rezultat !== 'Pogrešan email ili lozinka'">
    {{ rezultat }}
 </p>
@@ -50,110 +38,100 @@
     </div>
 
 </template>
-
 <script>
 import api from '@/api';
- 
 import Swal from 'sweetalert2';
-
 
 export default {
   data() {
     return {
       email: "",
       password: "",
-      rezultat: null,
+      token: localStorage.getItem('token') || null,
+    usrName: localStorage.getItem('userName') || '',
+    usrEmail: localStorage.getItem('userEmail') || '',
+    usrLevel: Number(localStorage.getItem('userLevel')) || 1,
+    rezultat: null  // <-- dodaj ovo ako template koristi rezultat
     };
+  },
+  computed: {
+    isLoggedIn() {
+    return !!localStorage.getItem('token');    }
+  },
+  created() {
+    // Ako postoji token, preusmeri korisnika direktno na profil
+    if (this.token) {
+      this.$router.push('/profil');
+    }
   },
   methods: {
     async tryLogin() {
-  console.log('Metoda tryLogin je pozvana.');
-  console.log('Email:', this.email);
+      console.log('Metoda tryLogin je pozvana.');
+      console.log('Email:', this.email);
 
-  try {
-    const response = await api.post
-('/login', {
-      email: this.email,
-      password: this.password
-    });
+      try {
+        const response = await api.post('/login', {
+          email: this.email,
+          password: this.password
+        });
 
-    console.log('Odgovor od servera:', response);
-    console.log('Podaci u odgovoru:', response.data);
+        console.log('Odgovor od servera:', response);
+        const userData = response.data.data;
+        const token = response.data.token;
 
-    if (response?.data && response.status === 200) {
-      const userData = response.data.data;
-      const token = response.data.token; // ovo je token
-      console.log('Podaci korisnika:', userData);
+        if (userData?.usr_id && token) {
+          // Sačuvaj podatke u localStorage
+          localStorage.setItem('token', token);
+localStorage.setItem('usr_id', String(userData.usr_id));
+          localStorage.setItem('userName', userData.usr_name || '');
+          localStorage.setItem('userEmail', userData.usr_email || '');
+          localStorage.setItem('userLozinka', userData.usr_password || '');
+          localStorage.setItem('userPhone', userData.usr_phone || '');
+          localStorage.setItem('usr_pib', userData.kmp_pib || '');
+          localStorage.setItem('usr_kompanija', userData.kmp_naziv || '');
+          localStorage.setItem('usr_adresa', userData.kmp_adresa || '');
+          localStorage.setItem('userLevel', userData.usr_level ?? 1);
 
-      if (userData?.usr_id) {
-        // 1) Očisti stare vrednosti, da ne bi pamtioo nazive ranijih kljuceva, kljucevi moraju biti uniformni
-        localStorage.clear();
+          this.token = token; // postavi reactive token
 
-        // 2) Sačuvaj osnovne podatke korisnika
-localStorage.setItem('token', token);
-        localStorage.setItem('usr_id', userData.usr_id);
-        localStorage.setItem('userName', userData.usr_name || '');
-        localStorage.setItem('userEmail', userData.usr_email || '');
-                localStorage.setItem('userLozinka', userData.usr_password || '');
-
-        localStorage.setItem('userPhone', userData.usr_phone || '');
-        localStorage.setItem('usr_pib', userData.kmp_pib || '');
-        localStorage.setItem('usr_kompanija', userData.kmp_naziv || '');
-        localStorage.setItem('usr_adresa', userData.kmp_adresa || '');
-        localStorage.setItem('userLevel', userData.usr_level ?? 1);
-        localStorage.setItem('fk_usr_nar_id', userData.usr_id);
-
-        console.log('Svi podaci korisnika sačuvani u localStorage.');
-
-        // 3) Ažuriraj reactive data properties da Vue odmah vidi promene
-        this.usrName = userData.usr_name || '';
-        this.usrEmail = userData.usr_email || '';
-                this.usrLozinka = userData.usr_password || '';
-
-        this.usrPhone = userData.usr_phone || '';
-        this.usrPib = userData.kmp_pib || '';
-        this.usrKompanija = userData.kmp_naziv || '';
-        this.usrAdresa = userData.kmp_adresa || '';
-
-        // Preusmeravanje sa SweetAlert potvrdom
-            Swal.fire({
-              icon: 'success',
-              title: 'Uspešna prijava',
-              text: `Dobrodošli, ${this.usrName}!`,
-              confirmButtonText: 'Nastavi'
-            }).then(() => {
-              this.$router.push('/profil');
-            });
-
-          } else {
-            console.error('Nedostaje usr_id u podacima korisnika.');
-            Swal.fire({
-              icon: 'error',
-              title: 'Greška',
-              text: 'Nedostaje ID korisnika u podacima.'
-            });
-          }
+          // Potvrda prijave i preusmeravanje
+          Swal.fire({
+            icon: 'success',
+            title: 'Uspešna prijava',
+            text: `Dobrodošli, ${userData.usr_name}!`,
+            confirmButtonText: 'Nastavi'
+          }).then(() => {
+            this.$router.push('/profil');
+          });
         } else {
-          console.error('Prijava nije uspela ili odgovor servera nije u očekivanom formatu.');
           Swal.fire({
             icon: 'error',
-            title: 'Greška pri prijavi',
-            text: 'Prijava nije uspela. Proverite podatke i pokušajte ponovo.'
+            title: 'Greška',
+            text: 'Prijava nije uspela, podaci nisu validni.'
           });
         }
       } catch (error) {
-        console.error('Greška prilikom prijave korisnika:', error);
+        console.error('Greška pri prijavi:', error);
         Swal.fire({
           icon: 'error',
           title: 'Greška pri prijavi',
           text: error.response?.data?.message || 'Došlo je do greške prilikom prijave.'
         });
       }
-    }
-  }}
-//Svi podaci se čuvaju bez if-ova za proveru null vrednosti. Ako nema podatka, biće postavljeno prazno string ''.userLevel koristi ?? 1 da se osigura da običan korisnik uvek dobije level 1 ako server ne vrati vrednost.Kod je čist i čitljiv, lako se održava.
+    },
 
+    logout() {
+      // Briše token i sve podatke iz localStorage
+      localStorage.clear();
+      this.token = null;
+      Swal.fire({ icon: 'success', title: 'Uspešna odjava' });
+      this.$router.push('/uloguj'); // vrati na login
+    }
+  }
+};
 </script>
+
+
 <style scoped >
 
 
