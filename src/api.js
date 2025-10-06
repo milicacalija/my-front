@@ -4,8 +4,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://my-backend-production.up.railway.app', // ispravan port za lokalni backend
-  //baseURL: process.env.VUE_APP_API_URL,
+  baseURL: 'https://helpful-quietude-production.up.railway.app', // tvoj javni backend  //baseURL: process.env.VUE_APP_API_URL,
   timeout: 10000,
 });
 
