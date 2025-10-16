@@ -59,10 +59,12 @@
 
 <script>
 import { productMixin } from '@/mixins/useProducts';
+import cartMixin from '@/mixins/cartMixin.js';
+
 
 export default {
   name: 'ProizvodOpis',
-  mixins: [productMixin],
+  mixins: [productMixin, cartMixin],
 props: { proizvodId: { type: [String, Number], required: true } 
 },
   data() {
@@ -78,9 +80,22 @@ props: { proizvodId: { type: [String, Number], required: true }
     }
   },
   async mounted() {
-    await this.loadProducts();
-    this.loading = false;
-  },
+  if (!this.itemsMap || Object.keys(this.itemsMap).length === 0) {
+    console.log('🔹 Učitavam proizvode za ProizvodOpis.vue...');
+    await this.loadItemsMap();
+  }
+
+  // Kada se sve učita, možeš isključiti loading
+  this.loading = false;
+
+  // Proveri da li proizvod postoji
+  if (this.proizvod) {
+    console.log('✅ Proizvod pronađen:', this.proizvod.pro_iupac);
+  } else {
+    console.warn('⚠️ Proizvod nije pronađen za ID:', this.proizvodId);
+  }
+},
+
   methods: {
     dodajUkorpu(proizvod) {
       console.log('Dodajem u korpu:', proizvod);

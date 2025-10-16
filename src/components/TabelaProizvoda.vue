@@ -1,6 +1,7 @@
 <template>
   <div class="tabela-proizvoda">
-    <!-- Desktop tabela samo ako je širi ekran -->
+    <!-- Desktop tabela samo ako je širi ekran, Dodaj fallback sliku kad dođe do greške onaj deo sa error, ali to je kod img koda
+ -->
     <table v-if="!isMobile" class="desktop-only">
       <thead>
         <tr>
@@ -17,7 +18,13 @@
         <tr v-for="product in items" :key="product.pro_id">
           <td>{{ product.pro_id }}</td>
           <td>{{ product.pro_iupac }}</td>
-          <td><img :src="getImageUrl(product)" class="proizvod-slika" /></td>
+<td>
+  <img 
+    :src="getImageUrl(product)" 
+    class="proizvod-slika"
+    @error="handleImageError($event, product.pro_iupac)"
+  />
+</td>
           <td>{{ product.pro_cena }}</td>
           <td>{{ product.pro_lager }}</td>
           <td><input type="number" v-model.number="quantities[product.pro_id]" min="1" class="quantity-input" /></td>
@@ -72,17 +79,25 @@ export default {
       isMobile: false
     };
   },
-  created() {
-    this.items.forEach(p => this.quantities[p.pro_id] = 1);
-    this.checkScreenWidth();
-    window.addEventListener('resize', this.checkScreenWidth);
-  },
-  beforeDestroy() {
-    window.removeEventListener('resize', this.checkScreenWidth);
+  watch: {
+    items: {
+      immediate: true,
+      deep: true,
+      handler(newItems) {
+        // inicijalizacija količina, bez logova
+        this.quantities = {};
+        newItems.forEach(p => {
+          this.quantities[p.pro_id] = 1;
+        });
+      }
+    }
   },
   methods: {
-    getImageUrl(item) { return getImageUrl(item); },
-    handleImageError(event, pro_iupac) {
+    // direktno koristi funkciju iz korpaimg.js, bez console.log
+    getImageUrl(item) {
+      return getImageUrl(item);
+    },
+    handleImageError(event) {
       if (event && event.target) event.target.src = '/images/korpica.png';
     },
     checkScreenWidth() {
@@ -91,6 +106,7 @@ export default {
   }
 };
 </script>
+
 
 
 <style scoped>

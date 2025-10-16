@@ -23,43 +23,53 @@ export default {
     };
   },
 
-  mounted() {
-    this.loadItemsMap();
-    this.loadCart();
-    this.loadOrder();
-  },
+  mounted: async function() {
+  await this.loadItemsMap();  // popuni itemsMap
+  this.loadCart();            // učitaj stavke korpe
+  this.loadOrder();           // učitaj order ako koristiš
+},
 
   computed: {
-    resolvedCartItems() {
-      if (!this.itemsMap || Object.keys(this.itemsMap).length === 0) {
-        console.log('⚠️ itemsMap još nije učitan, čekamo podatke iz baze.');
-        return [];
-      }
-      // Grupisanje po fk_stv_pro_id
-    const grouped = {};
+resolvedCartItems() {
+  if (!this.itemsMap || Object.keys(this.itemsMap).length === 0) {
+    setTimeout(() => this.loadItemsMap?.(), 100);
+    return [];
+  }
 
-    this.cartItems.forEach(item => {
-      console.log('[DEBUG] item iz cartItems:', item);
-      if (!grouped[item.fk_stv_pro_id]) {
-        grouped[item.fk_stv_pro_id] = {
-          fk_stv_pro_id: item.fk_stv_pro_id,
-          stv_kolicina: item.stv_kolicina,
-          stv_cena: item.stv_cena,
-          uk_stv_cena: item.uk_stv_cena,
-          product: this.itemsMap[String(item.fk_stv_pro_id)]
-        };
-        console.log('[DEBUG] Novi proizvod dodat u grouped:', grouped[item.fk_stv_pro_id]);
-      } else {
-        grouped[item.fk_stv_pro_id].stv_kolicina += item.stv_kolicina;
-        grouped[item.fk_stv_pro_id].uk_stv_cena += item.uk_stv_cena;
-        console.log('[DEBUG] Postojeći proizvod ažuriran u grouped:', grouped[item.fk_stv_pro_id]);
-      }
-    });
+  const grouped = {};
 
-    const result = Object.values(grouped);
-    console.log('[DEBUG] resolvedCartItems:', result);
-    return result;
-    },
+  this.cartItems.forEach(item => {
+    // Pretvori ID u string da bi se poklopio sa itemsMap ključevima
+    const productData = this.itemsMap[String(item.fk_stv_pro_id)];
+
+    if (!productData) {
+      console.warn(`⚠️ Proizvod sa ID ${item.fk_stv_pro_id} nije pronađen u itemsMap`);
+    } else {
+      console.log(`✅ Proizvod pronađen: ID=${item.fk_stv_pro_id}, naziv=${productData.pro_iupac}`);
+    }
+
+    if (!grouped[item.fk_stv_pro_id]) {
+      grouped[item.fk_stv_pro_id] = {
+        fk_stv_pro_id: item.fk_stv_pro_id,
+        stv_kolicina: item.stv_kolicina,
+        stv_cena: item.stv_cena,
+        uk_stv_cena: item.uk_stv_cena,
+        // Ovde koristimo proizvod iz itemsMap, ili fallback koji je isti tip
+        product: productData || { pro_iupac: '' }
+      };
+    } else {
+      grouped[item.fk_stv_pro_id].stv_kolicina += item.stv_kolicina;
+      grouped[item.fk_stv_pro_id].uk_stv_cena += item.uk_stv_cena;
+    }
+  });
+
+  return Object.values(grouped);
+},
+
+
+
+//Problem je što tvoja funkcija resolvedCartItems() trenutno ne vraća ništa. U JS, ako funkcija nema return, onda je rezultat undefined. Zato ti piše da nije definisano.Trenutno završavaš forEach i zatvaraš funkciju bez return Object.values(grouped);.
+
     cartTotal() {
       return this.cartItems.reduce((sum, item) => sum + (item.uk_stv_cena || 0), 0);
     }
@@ -73,34 +83,69 @@ export default {
       deep: true
     }
   },
+  mounted() {
+  this.initCart();
+},
 
-  methods: {
+methods: {
+ async initCart() {
+  console.log('🔹 Pokrećem initCart()');
+
+  // 1️⃣ učitaj mapu proizvoda
+  await this.loadItemsMap();
+  console.log('✅ itemsMap učitana:', this.itemsMap);
+
+  // 2️⃣ učitaj korpu iz localStorage
+  this.loadCart();
+  console.log('⚡ Cart nakon loadCart():', this.cartItems);
+
+  // 3️⃣ filtriraj nepostojeće proizvode
+  const preFilterCount = this.cartItems.length;
+  this.cartItems = this.cartItems.filter(item => this.itemsMap[String(item.fk_stv_pro_id)]);
+  const postFilterCount = this.cartItems.length;
+  this.syncCartToLocalStorage();
+  console.log(`🧹 Filtrirano ${preFilterCount - postFilterCount} nepostojećih proizvoda iz korpe`);
+
+  // 4️⃣ učitaj order
+  this.loadOrder();
+  console.log('📦 Order nakon loadOrder():', this.order);
+},
+  async loadItemsMap() {
+    try {
+      const products = await api.get('/proizvodi'); // ili tvoj endpoint
+      this.itemsMap = {};
+      products.data.data.forEach(p => {
+        this.itemsMap[p.pro_id] = p;
+      });
+      console.log('✅ itemsMap učitana:', this.itemsMap);
+    } catch (e) {
+      console.error('❌ Greška pri učitavanju itemsMap:', e);
+    }
+  },
+
+//3️⃣ Proveri c
+  
+
+
+  
+
+    //fALLBACK ZA OVU FUNKCIJU LOOADiTEMSMAP, ➡️ Ovo pokušava do 3 puta da dobije podatke pre nego što stvarno odustane.privremeno cemo komenatraisati loadItems Map da bismo resili probelm u loadProducts funckjiji
     // ===== Loaders =====
-    async loadItemsMap() {
-      try {
-        const response = await api.get('/proizvodi');
-        const products = response.data.data || [];
-        this.itemsMap = products.reduce((map, p) => {
-          map[String(p.pro_id)] = p;
-          return map;
-        }, {});
-        localStorage.setItem('itemsMap', JSON.stringify(this.itemsMap));
-      } catch (err) {
-        console.error('❌ Greška pri učitavanju proizvoda:', err);
-      }
-    },
+    
 
     loadCart() {
-      try {
-        const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
-        this.cartItems = savedCart;
-        this.cartCount = savedCart.reduce((sum, item) => sum + (item.stv_kolicina || 0), 0);
-      } catch (e) {
-        console.error('❌ Greška pri učitavanju korpe iz localStorage:', e);
-        this.cartItems = [];
-        this.cartCount = 0;
-      }
-    },
+  try {
+    const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
+    this.cartItems = savedCart;
+    this.cartCount = savedCart.reduce((sum, item) => sum + (item.stv_kolicina || 0), 0);
+    
+    console.log('⚡ Cart nakon loadCart():', this.cartItems); // <-- ovde
+  } catch (e) {
+    console.error('❌ Greška pri učitavanju korpe iz localStorage:', e);
+    this.cartItems = [];
+    this.cartCount = 0;
+  }
+},
 
     loadOrder() {
       try {
@@ -124,45 +169,30 @@ export default {
 
     // ===== Cart actions =====
    async dodajUkorpu(pro_iupac, quantity = 1) {
-  try {
-    const product = Object.values(this.itemsMap).find(
-      p => p.pro_iupac === pro_iupac.pro_iupac || p.pro_iupac === pro_iupac
-    );
-    if (!product) return console.error('❌ Proizvod nije pronađen!');
+  const product = Object.values(this.itemsMap).find(
+    p => p.pro_iupac === pro_iupac.pro_iupac || p.pro_iupac === pro_iupac
+  );
+  if (!product) return console.error('❌ Proizvod nije pronađen!');
 
-    // ✅ Provera lagera
-    if (product.pro_lager < quantity) {
-      return Swal.fire({
-        icon: 'warning',
-        title: 'Nema dovoljno na lageru',
-      });
-    }
-
-
-    const existingItem = this.cartItems.find(ci => ci.fk_stv_pro_id === product.pro_id);
-    if (existingItem) {
-      const novaKolicina = existingItem.stv_kolicina + quantity;
-
-      if (novaKolicina > product.pro_lager) {
-        return console.warn(`❌ Ne može se dodati ${quantity}. Maksimalno dostupno: ${product.pro_lager - existingItem.stv_kolicina}`);
-      }
-
-      existingItem.stv_kolicina = novaKolicina;
-      existingItem.uk_stv_cena = existingItem.stv_kolicina * existingItem.stv_cena;
-    } else {
-      this.cartItems.push({
-        fk_stv_pro_id: product.pro_id,
-        stv_kolicina: quantity,
-        stv_cena: product.pro_cena,
-        uk_stv_cena: quantity * product.pro_cena
-      });
-    }
-
-    this.syncCartToLocalStorage();
-  } catch (e) {
-    console.error('❌ Greška prilikom dodavanja u korpu:', e);
+  const existingItem = this.cartItems.find(ci => ci.fk_stv_pro_id === product.pro_id);
+  
+  if (existingItem) {
+    existingItem.stv_kolicina += quantity;
+    existingItem.uk_stv_cena = existingItem.stv_kolicina * existingItem.stv_cena;
+  } else {
+    // prvi put dodajemo proizvod u praznu korpu
+    this.cartItems.push({
+      fk_stv_pro_id: product.pro_id,
+      stv_kolicina: quantity,
+      stv_cena: product.pro_cena,
+      uk_stv_cena: quantity * product.pro_cena
+    });
   }
-},
+
+  this.syncCartToLocalStorage(); // ← Obezbeđuje da se pamti u localStorage
+  console.log('⚡ Cart nakon dodavanja:', this.cartItems);
+}
+,
 
 
     removeFromCart(item) {

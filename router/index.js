@@ -18,7 +18,7 @@ import PiktogramiView from '../views/PiktogramiView.vue'
 import PrimenaView from '../views/PrimenaView.vue'
 import ProizvodOpisView from '@/views/ProizvodOpisView.vue'
 import PorukeView from '../views/PorukeView.vue'
-
+import { globalReactive } from '@/store/globalReactive.js';
 
 
 
@@ -164,17 +164,25 @@ const routes = [
 
 /* 🔒 Global guard za admin stranice */
 router.beforeEach((to, from, next) => {
-  const userLevel = Number(localStorage.getItem('userLevel')); // 0 = admin, 1 = korisnik
-
-  // Stranice koje vidi samo admin
   const adminPages = ['/admin-panel', '/predlozi', '/kompanije'];
 
-  if (adminPages.includes(to.path) && userLevel !== 0) {
-    alert('Nemate pristup ovoj stranici.');
-    next('/'); // preusmeri običnog korisnika na home
-  } else {
-    next();
+  if (to.path === '/uloguj' && globalReactive.isLoggedIn) {
+    // ako je već ulogovan, ne može nazad na login
+    return next('/home');
   }
+
+  if (adminPages.includes(to.path) && globalReactive.userLevel !== 0) {
+    alert('Nemate pristup ovoj stranici.');
+    return next('/home');
+  }
+
+  if (['/profil', '/korpa', ...adminPages].includes(to.path) && !globalReactive.isLoggedIn) {
+    alert('Molimo prijavite se da pristupite ovoj stranici.');
+    return next('/uloguj');
+  }
+
+  next();
 });
+
 
 export default router;

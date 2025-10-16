@@ -12,7 +12,7 @@
 
          <nav>
     <!-- Prikazuje Hemikalije samo ako korisnik NIJE ulogovan, glavna navigacija -->
-    <router-link v-if="!isLoggedIn" to="/proizvodi">Hemikalije</router-link>
+    <router-link to="/proizvodi">Hemikalije</router-link>
 
     <router-link to="/primena">Primena</router-link>
     <router-link to="/piktogrami">Piktogrami</router-link>

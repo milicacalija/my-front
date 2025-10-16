@@ -1,111 +1,76 @@
 <template>
-  
   <div class="proizvodi-page">
-      <!-- Prikaz komponente Korpa -->
-    
 
+    <!-- Dugme Korpa i popup -->
+    <div class="cart-button-container">
+      <button class="cart-button" @click="toggleCartPopup">
+        Korpa <span v-if="cartCount">({{ cartCount }})</span>
+      </button>
 
-   <!-- Dugme Korpa -->
-  <div class="cart-button-container">
-    <button class="cart-button" @click="toggleCartPopup">
-      Korpa <span v-if="cartCount">({{ cartCount }})</span>
-    </button>
+      <div class="cart-overlay" :class="{ show: showCartPopup }" @click="toggleCartPopup"></div>
 
-    <!-- Overlay -->
-    <div class="cart-overlay" :class="{ show: showCartPopup }" @click="toggleCartPopup"></div>
-
-    <!-- Tooltip / popup korpe -->
-    <div class="cart-popup" :class="{ show: showCartPopup }">
-      <div v-if="resolvedCartItems.length > 0">
-        <strong>Vaša korpa:</strong>
-        <ul>
-          <li 
-            v-for="(item, index) in resolvedCartItems"
-            :key="(item.stv_id || item.fk_stv_pro_id) + '-' + index"
-            class="cart-item"
-          >
-          
-            <div class="cart-item-info">
-              {{ item.product?.pro_iupac || 'Nepoznata stavka' }} - 
+      <div class="cart-popup" :class="{ show: showCartPopup }">
+        <div v-if="resolvedCartItems.length > 0">
+          <strong>Vaša korpa:</strong>
+          <ul>
+            <li v-for="(item, index) in resolvedCartItems" :key="(item.stv_id || item.fk_stv_pro_id) + '-' + index">
+              {{ item.product?.pro_iupac || 'Nepoznata stavka' }} -
               {{ item.stv_kolicina }} kom - {{ item.uk_stv_cena.toFixed(2) }} RSD
-            </div>
-          </li>
-        </ul>
-
-        <div class="cart-total">
-          <strong>Ukupna cena: {{ calculateTotalPrice() }} RSD</strong>
+            </li>
+          </ul>
+          <div class="cart-total">
+            <strong>Ukupna cena: {{ calculateTotalPrice() }} RSD</strong>
+          </div>
+          <button class="add-korpa" @click="goToCheckout">Nastavak kupovine</button>
         </div>
-
-        <button class="add-korpa" @click="goToCheckout">Nastavak kupovine</button>
-      </div>
-
-      <div v-else>
-        Korpa je prazna
+        <div v-else>Korpa je prazna</div>
       </div>
     </div>
-  </div>
 
     <h1>Hemikalije</h1>
 
-    <!-- Input za pretragu -->
-    <input 
-      type="text" 
+    <!-- Pretraga -->
+    <input
+      type="text"
       v-model="searchQuery"
-      placeholder="Ukucaj naziv proizvoda po IUPAC i saznaj detalje"
+      placeholder="Ukucaj naziv proizvoda po IUPAC"
       @input="searchData"
       class="input"
     />
     <p v-if="noResults" class="no-results">Nema proizvoda u pretrazi</p>
 
-    <!-- Prikaži tabelu svih proizvoda SAMO ako nije aktivna pretraga -->
-    <TabelaProizvoda 
-  v-if="!searchQuery" 
-  :items="items" 
-  @select-product="selectProizvod"
-  @add-to-cart="dodajUkorpu"
-/>
+    <!-- Tabela proizvoda -->
+    <TabelaProizvoda
+      v-if="!searchQuery"
+      :items="items"
+      :key="itemsVersion"
+      @select-product="selectProizvod"
+      @add-to-cart="dodajUkorpu"
+    />
 
     <!-- Detalji selektovanog proizvoda -->
-    <div 
-      v-if="selectedImageProizvod" 
-      class="product-wrapper"
-      style="display: flex; gap: 20px;"
-    >
-      <!-- Levo: Slika + količina + dugme -->
-      <div class="selected-proizvod" style="flex: 1;">
-        
-        <img 
-          :src="getImageUrl(selectedImageProizvod)" 
+    <div v-if="selectedImageProizvod" class="product-wrapper" style="display: flex; gap: 20px;">
+      <div class="selected-proizvod" style="flex:1;">
+        <img
+          :src="getImageUrl(selectedImageProizvod)"
           :alt="selectedImageProizvod.pro_iupac"
-          class="proizvod-slika"
-          @error="handleImageError($event, selectedImageProizvod.pro_iupac)"
+          @error="handleImageError($event)"
         />
 
-        <!-- Količina -->
         <div class="quantity-container">
           <button @click="decreaseQuantity">-</button>
-          <input 
-            type="number" 
-            v-model.number="productQuantity" 
-            min="1" 
-            class="quantity-input"
-          />
+          <input type="number" v-model.number="productQuantity" min="1" class="quantity-input" />
           <button @click="increaseQuantity">+</button>
         </div>
 
-        <!-- Dugme Dodaj u korpu -->
         <div class="button-container">
-          <button 
-            class="add-korpa" 
-            @click="dodajUkorpu(selectedImageProizvod, productQuantity)"
-          >
+          <button class="add-korpa" @click="dodajUkorpu(selectedImageProizvod, productQuantity)">
             Dodaj u korpu
           </button>
         </div>
       </div>
 
-      <!-- Desno: Tabela sa detaljima proizvoda -->
-      <div class="table-container" style="flex: 1;">
+      <div class="table-container" style="flex:1;">
         <table>
           <tbody>
             <tr>
@@ -126,7 +91,7 @@
         </table>
       </div>
     </div>
-    
+
   </div>
 </template>
 
@@ -137,6 +102,8 @@ import cartMixin from '@/mixins/cartMixin';
 import api from '@/api';
 import { getImageUrl } from '@/components/korpaimg.js';
 
+
+
 export default {
   name: 'Proizvodi',
   mixins: [cartMixin],
@@ -144,45 +111,79 @@ export default {
   data() {
     return {
       items: [],
-      itemsMap: {},
       selectedImageProizvod: null,
       productQuantity: 1,
       searchQuery: '',
       noResults: false,
+      itemsVersion: 0,
     };
   },
+  
   async created() {
     await this.loadProducts();
+    this.selectedImageProizvod = null; // resetuje selekciju
   },
   methods: {
-    async loadProducts() {
-      try {
-        const response = await api.get('/proizvodi');
-        this.items = response.data.data || [];
 
-        // mapa proizvoda po ID-u
-        this.itemsMap = this.items.reduce((map, p) => {
-          map[String(p.pro_id)] = p;
-          return map;
-        }, {});
-      } catch (err) {
-        console.error('❌ Greška pri učitavanju proizvoda:', err);
-      }
-    },
-
-    selectProizvod(product) {
+    async fetchProductDetails(pro_id) {
+  try {
+    const response = await api.get(`/proizvodi/${pro_id}`);
+    if (response.data && response.data.data) {
+      const product = response.data.data;
+      // Sanitize naziv ako treba
+      product.pro_iupac = sanitizeIupacName(product.pro_iupac);
       this.selectedImageProizvod = product;
-      this.productQuantity = 1; // reset na 1 kada se izabere novi proizvod
-    },
+    }
+  } catch (err) {
+    console.error('Greška pri učitavanju detalja proizvoda:', err);
+  }
+},
+    async loadProducts() {
+  try {
+    const response = await api.get(`/proizvodi?ts=${Date.now()}`);
 
-    decreaseQuantity() {
-      if (this.productQuantity > 1) this.productQuantity--;
-    },
-    increaseQuantity() {
-      this.productQuantity++;
-    },
+    // Direktno postavljanje proizvoda, bez nepotrebnih transformacija
+    this.items = response.data.data || [];
 
-    async searchData() {
+    // Remount tabele ako je potrebno
+    this.itemsVersion++;
+
+    // Reset selektovanog proizvoda
+    this.selectedImageProizvod = null;
+
+  } catch (err) {
+    console.error('❌ Greška pri učitavanju proizvoda:', err);
+  }
+},
+async loadItemsMap() {
+  try {
+    const response = await api.get('/proizvodi');
+    const proizvodi = response.data.data || response.data;
+
+    // Mapiranje proizvoda po pro_iupac radi bržeg pristupa
+    this.itemsMap = {};
+
+    //Ovde je bila greska, Treba da mapiraš proizvode po njihovom ID-ju (pro_id),ne po imenu (pro_iupac).
+    this.itemsMap = Object.fromEntries(proizvodi.map(p => [String(p.pro_id), p]));
+
+    console.log('✅ ItemsMap uspešno učitana:', Object.keys(this.itemsMap).length);
+  } catch (error) {
+    console.error('❌ Greška pri učitavanju proizvoda:', error);
+  }
+},
+
+
+  refreshProducts() {
+    // Pozovi ovo kad menjaš podatke ili nakon dodavanja u bazu
+    this.loadProducts();
+    this.selectedImageProizvod = null;
+  },
+    selectProizvod(product) {
+  // Učitaj detalje sa servera
+  this.fetchProductDetails(product.pro_id);
+  this.productQuantity = 1;
+},
+    searchData() {
       if (!this.searchQuery) {
         this.selectedImageProizvod = null;
         this.noResults = false;
@@ -194,18 +195,29 @@ export default {
       this.selectedImageProizvod = exact || partial || null;
       this.noResults = !this.selectedImageProizvod;
     },
-
-    getImageUrl(item) {
-      return getImageUrl(item);
+    decreaseQuantity() { if (this.productQuantity > 1) this.productQuantity--; 
+      
     },
+    increaseQuantity() { this.productQuantity++;
 
-    handleImageError(event, pro_iupac) {
-      console.warn(`Slika nije pronađena za: ${pro_iupac}`);
-      if (event?.target) event.target.src = '/images/korpica.png';
-    }
-  }
+     },
+    getImageUrl(item) { return getImageUrl(item);
+
+     },
+    handleImageError(event) { if (event?.target) event.target.src = '/images/korpica.png'; },
+  },
+  mounted() {
+      this.loadItemsMap();
+  this.loadProducts();
+  //this.refreshInterval = setInterval(this.loadProducts, 5000); // svakih 5 sekundi osvezava stranicu, i prikazuje get zahteve, to je popterecivanje
+},
+beforeDestroy() {
+  clearInterval(this.refreshInterval);
+}
 };
 </script>
+
+
 
 
 
@@ -222,8 +234,9 @@ h3 {
 }
 
 img {
-  display: block;
-  margin: 0 auto;
+  width: 300px;
+  height: 300px;
+  margin-top: 20px;
 }
 
 /* ========================

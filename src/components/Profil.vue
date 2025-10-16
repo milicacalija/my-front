@@ -29,19 +29,20 @@
 <p><strong>Kompanija:</strong> {{ firmaNaziv }}</p>
 <p><strong>Adresa:</strong> {{ usrAdresa }}</p>
 
-      <button class="logout-btn" @click="logout">Odjavi se</button>
-        </div>
-     <!-- Ovde ide elegantni container za proizvode -->
-<div class="profil-products-container">
-  <!-- Prikazuje se samo ako korisnik nije admin -->
-  <Proizvodi v-if="!isAdmin" />
 
-   <!-- Dugme za admina da ode na admin stranicu -->
-    <div v-if="isAdmin">
-  <button class="logout-btn" @click="goToAdmin">
-    Idi na Admin stranicu
-  </button>
-</div>
+<!-- link ka proizvodima -->
+<router-link to="/proizvodi" class="profil-link">
+  Pogledaj proizvode
+</router-link>
+
+
+      <button class="logout-btn" @click="logout">Odjavi se</button>
+        <!-- Dugme / link ka proizvodima -->
+
+        </div>
+
+      
+    
 
       <!-- Admin panel za admina, Napomena: Moraš koristiti v-if="isAdmin", a ne v-else.
 
@@ -50,8 +51,7 @@ v-else radi samo ako je prethodni v-if ili v-else-if u istom DOM nivou. -->
 
   
 
- 
-  </div></div>
+ </div>
 </template>
 
 <script>
@@ -59,12 +59,13 @@ import Proizvodi from '@/components/Proizvodi.vue';
 //Ah, sada je potpuno jasno zašto dobijaš “previše rekurzije” (Maximum call stack exceeded) 👀U <template> još uvek koristiš <Admin /> unutar Profil.vue.Admin.vue je tvoja stranica koja verovatno opet importuje Profil.vue.Dakle, Vue pokušava da renderuje Profil → unutra <Admin> → opet Profil → <Admin>… i tako u krug, zato je rekurzija beskonačna.
   
 //Problem je što pokušavaš da importuješ Admin.vue unutar Profil.vue i koristiš <Admin />, ali u stvari:Admin.vue je glavna stranica (verovatno ruta /admin), a ne komponenta.Vue ne dozvoljava da direktno renderuješ rutu kao komponentu unutar druge komponente, osim ako napraviš posebnu podkomponentu (npr. AdminPanel.vue).Dakle, kad stavljaš <Admin /> unutar Profil.vue, Vue ga ne prepoznaje → zato ti izlazi greška Unknown custom element.
-export default {
+
     //Tvoj computed čita vrednosti direktno iz localStorage, što ne radi kako očekuješ, jer Vue ne zna da se vrednosti localStorage promenile – computed se neće automatski osvežiti. Zato, iako localStorage sadrži sve podatke, template ih ne vidi.Rešenje: koristi data properties + postavi ih pri logovanju
-   components: { Proizvodi,},
-//Posto kontroliseno prikaz stranice za korisnike i admina moramo na neki nacin to i uraditi kroz prop, isAdmin je boolean (true ako je admin, false ako je običan korisnik).
    
-  
+//Posto kontroliseno prikaz stranice za korisnike i admina moramo na neki nacin to i uraditi kroz prop, isAdmin je boolean (true ako je admin, false ako je običan korisnik).
+   ///Zasto ne moze kad se korisnik uloguje i udje u profil da se vrati nazad Problem:Kad se korisnik uloguje i odeš na /profil, u Vue template-u si stavila <Proizvodi /> direktno unutar Profil.vue.Takođe koristiš podatke iz localStorage za prikaz i computed za isAdmin.Ali Vue ne “vidi” promene u localStorage automatski. To znači da template može “zamrznuti” stanje i tvoj router možda ne reaguje kao što očekuješ.Pored toga, ako negde importuješ Admin.vue direktno u Profil.vue (što nisi pokazala ovde, ali je spomenuto u komentarima), nastaje potencijalna rekurzija i “zamrzavanje” aplikacije.
+  export default {
+   components: { Proizvodi,},
   data() {
     return {
       usrName: '',
@@ -74,7 +75,6 @@ export default {
     usrPib: '',
     firmaNaziv: '',
     usrAdresa: '',
-    showAdmin: false,
     showPassword: false,
         userLevel: 1 // default običan korisnik
         
@@ -201,6 +201,8 @@ isAdmin() {
   display: block;
   margin-left: auto;
   margin-right: auto;
+  width: 200px;
+text-align: center;
 }
 .profil-products-container {
   margin-top: 30px;
@@ -212,6 +214,23 @@ isAdmin() {
   overflow-x: auto; /* horizontalni scroll ako je preširoko */
 
 }
+.profil-link {
+  color: #641515;
+  text-decoration: underline;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.profil-link:hover {
+  color: #0d0d43;
+}  
+
+
+
+
+
 /* Mobilni prikaz */
 /* Responsive za 336px ekran */
 @media (max-width: 700px) {
@@ -247,6 +266,8 @@ isAdmin() {
     font-size: 14px;
     width: 100%;
   }
+  
+
 }
 
 </style>

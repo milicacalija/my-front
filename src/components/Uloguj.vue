@@ -41,29 +41,28 @@
 <script>
 import api from '@/api';
 import Swal from 'sweetalert2';
-
+import { globalReactive } from '@/store/globalReactive.js';
 export default {
   data() {
     return {
       email: "",
       password: "",
-      token: localStorage.getItem('token') || null,
-    usrName: localStorage.getItem('userName') || '',
+  token: localStorage.getItem('token') || null, // služi za proveru da li je korisnik logovan
+      usrName: localStorage.getItem('userName') || '',
     usrEmail: localStorage.getItem('userEmail') || '',
     usrLevel: Number(localStorage.getItem('userLevel')) || 1,
-    rezultat: null  // <-- dodaj ovo ako template koristi rezultat
+      isLoggedIn: !!localStorage.getItem('token'), // dodatno, reaktivno praćenje statusa prijave
+    rezultat: null,  // <-- dodaj ovo ako template koristi rezultat
+              
     };
   },
   computed: {
-    isLoggedIn() {
-    return !!localStorage.getItem('token');    }
+  showLogin() {
+    return !localStorage.getItem('token'); // prikaz samo ako nije logovan
+  }
   },
-  created() {
-    // Ako postoji token, preusmeri korisnika direktno na profil
-    if (this.token) {
-      this.$router.push('/profil');
-    }
-  },
+ //Zašto je Vue reactive state  bolje od lokalnog localStorage.getItem('token') u routeru?localStorage nije reaktivan – Vue ne zna kada se promeni.Ako router čita token direktno iz localStorage, možda neće odmah videti promenu posle logovanja → preusmerava na login prvi put.Sa reactive auth.isLoggedIn, Vue odmah vidi promenu i router zna da je korisnik ulogovan.
+  //Nikad ne dodeljuj vrednosti iz localStorage direktno u computed, jer Vue ne može da prati promene u localStorage. Umesto toga, koristi data property i postavi ga prilikom logovanja, npr return this.isLoggedIn = !!localStorage.getItem('token'); u tryLogin metodi.
   methods: {
     async tryLogin() {
       console.log('Metoda tryLogin je pozvana.');
@@ -91,9 +90,9 @@ localStorage.setItem('usr_id', String(userData.usr_id));
           localStorage.setItem('usr_kompanija', userData.kmp_naziv || '');
           localStorage.setItem('usr_adresa', userData.kmp_adresa || '');
           localStorage.setItem('userLevel', userData.usr_level ?? 1);
-
-          this.token = token; // postavi reactive token
-
+  globalReactive.isLoggedIn = true; // ✅ sada router zna da je logovan
+      globalReactive.userLevel = userData.usr_level ?? 1;
+      this.$router.push('/home');
           // Potvrda prijave i preusmeravanje
           Swal.fire({
             icon: 'success',
